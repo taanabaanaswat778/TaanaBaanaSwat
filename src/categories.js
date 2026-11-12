@@ -1,9 +1,9 @@
 // ===== EDIT: the categories shown in the dropdown =====
 // Names must match the store (see utils.js) so each product lands on the right menu page.
 export const CATEGORY_GROUPS = [
-  ["Summer fabrics", ["Lawn", "Cotton", "Linen"]],
+  ["Summer fabrics", ["Lawn EMBROIDERY", "Lawn Digital Printed","Lawn Digital Printed EMBROIDERY","Cotton", "Linen"]],
   ["Winter fabrics", ["Karandi", "Khaddar", "Velvet"]],
-  ["Fancy / Festive", ["Fancy", "Chiffon", "Silk", "Organza", "Formal", "Wedding", "Party"]],
+  ["Fancy / Festive", ["Fancy", "Formal", ]],
 ];
 // ======================================================
 
