@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { updateProducts } from "../db";
 import { friendly } from "../utils";
+import { PiDownloadSimple, PiUploadSimple, PiFileCsv, PiTable, PiArrowCounterClockwise } from "react-icons/pi";
 
 const qtyOf = (p) => (p.qty === "" || p.qty === undefined || p.qty === null ? null : Number(p.qty));
 const norm = (v) => String(v ?? "").trim().toUpperCase().replace(/\s+/g, "");
@@ -13,7 +14,6 @@ const MODES = [
   ["sub", "Subtract the file quantities from my current stock (items sold)"],
 ];
 
-// 12, "12", "12 pcs" -> 12.  Blank or negative -> null (a problem row)
 function parseQty(v) {
   if (v === "" || v === null || v === undefined) return null;
   const m = String(v).replace(/,/g, "").match(/-?\d+(\.\d+)?/);
@@ -22,7 +22,6 @@ function parseQty(v) {
   return n >= 0 ? n : null;
 }
 
-// guess which column is the code, the name and the quantity from the heading row
 function guess(heads) {
   const h = heads.map((x) => String(x ?? "").toLowerCase());
   const find = (words, skip = []) => h.findIndex((t, i) => !skip.includes(i) && words.some((w) => t.includes(w)));
@@ -34,7 +33,7 @@ function guess(heads) {
 
 export default function Stock({ products }) {
   const [fileName, setFileName] = useState("");
-  const [book, setBook] = useState(null); // { names, sheets }
+  const [book, setBook] = useState(null);
   const [sheet, setSheet] = useState("");
   const [header, setHeader] = useState(true);
   const [map, setMap] = useState({ code: -1, name: -1, qty: -1 });
@@ -44,6 +43,7 @@ export default function Stock({ products }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [undo, setUndo] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const rows = useMemo(() => (book && sheet ? book.sheets[sheet] || [] : []), [book, sheet]);
   const width = Math.max(0, ...rows.slice(0, 50).map((r) => r.length));
@@ -58,9 +58,7 @@ export default function Stock({ products }) {
     setMap(guess(Array.from({ length: w }, (_, i) => (hdr ? String(r[0]?.[i] ?? "").trim() : "") || `Column ${letter(i)}`)));
   };
 
-  async function pickFile(e) {
-    const f = e.target.files[0];
-    e.target.value = "";
+  async function processFile(f) {
     if (!f) return;
     setMsg(null);
     try {
@@ -78,7 +76,28 @@ export default function Stock({ products }) {
     }
   }
 
-  // find the product for one row of the file: code first, then name (your product names may be codes too)
+  async function pickFile(e) {
+    const f = e.target.files[0];
+    e.target.value = "";
+    processFile(f);
+  }
+
+  // Drag and Drop handlers
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
   const idx = useMemo(() => {
     const code = new Map(), name = new Map();
     const push = (m, k, p) => { if (k) m.set(k, [...(m.get(k) || []), p]); };
@@ -182,20 +201,58 @@ export default function Stock({ products }) {
 
   return (
     <>
-      <div className="card">
-        <div className="card-h"><h3>Import stock from Excel</h3></div>
-        <div className="hint">
+      <div className="card" style={{ padding: "24px" }}>
+        <div className="card-h" style={{ borderBottom: "1px solid #eee", paddingBottom: 16, marginBottom: 16 }}>
+          <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 18 }}>
+            <PiTable size={22} color="var(--ac)" /> Import stock from Excel
+          </h3>
+        </div>
+        
+        <div className="hint" style={{ marginBottom: 20 }}>
           Your sheet needs a column with the <b>product code</b> (or name) and a column with the <b>quantity</b>. Excel (.xlsx, .xls) and CSV files work.
           Not sure about the layout? Download your current stock, edit the Quantity column, and upload it again.
         </div>
-        <div className="row-wrap">
-          <button className="btn ghost" onClick={download} disabled={!products.length}>⬇ Download current stock (Excel)</button>
+
+        <div className="row-wrap" style={{ marginBottom: 20 }}>
+          <button className="btn ghost" style={{ display: "flex", alignItems: "center", gap: 8 }} onClick={download} disabled={!products.length}>
+            <PiDownloadSimple size={18} /> Download current stock (Excel)
+          </button>
+          {undo && (
+            <button className="btn ghost" style={{ display: "flex", alignItems: "center", gap: 8 }} disabled={busy} onClick={undoLast}>
+              <PiArrowCounterClockwise size={18} /> Undo last import
+            </button>
+          )}
         </div>
-        <label>Choose your Excel or CSV file
-          <input type="file" accept=".xlsx,.xls,.csv" onChange={pickFile} />
-        </label>
-        {msg && <div className={"msg " + (msg.ok ? "ok" : "bad")}>{msg.t}</div>}
-        {undo && <div><button className="btn ghost" disabled={busy} onClick={undoLast}>↩ Undo the last import</button></div>}
+
+        {/* Beautiful Drag & Drop File Input */}
+        <div 
+          className={`file-drop-zone ${dragActive ? "active" : ""}`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <input 
+            type="file" 
+            accept=".xlsx,.xls,.csv" 
+            onChange={pickFile} 
+            id="file-upload" 
+            style={{ display: "none" }} 
+          />
+          <label htmlFor="file-upload" style={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", margin: 0 }}>
+            <div className="file-icon-wrap">
+              {fileName ? <PiFileCsv size={28} /> : <PiUploadSimple size={28} />}
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
+              {fileName ? fileName : "Click to upload or drag and drop"}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--mut)" }}>
+              Excel or CSV file
+            </div>
+          </label>
+        </div>
+
+        {msg && <div className={"msg " + (msg.ok ? "ok" : "bad")} style={{ marginTop: 16 }}>{msg.t}</div>}
       </div>
 
       {book && (

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { money } from "../utils";
+import { PiMagnifyingGlass } from "react-icons/pi"; // Import the professional icon
 
 // Search bar shown at the top of the admin: finds products by name, code or category
 export default function SearchBox({ products, onPick }) {
@@ -31,14 +32,18 @@ export default function SearchBox({ products, onPick }) {
 
   return (
     <div className="sb" ref={box}>
-      <input
-        type="search"
-        placeholder="🔍 Search a product by name or code…"
-        value={q}
-        onChange={(e) => { setQ(e.target.value); setOpen(true); setAt(0); }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={onKey}
-      />
+      <div className="sb-input-wrap">
+        <PiMagnifyingGlass className="sb-icon" />
+        <input
+          type="search"
+          placeholder="Search a product by name or code…"
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setOpen(true); setAt(0); }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={onKey}
+        />
+      </div>
+      
       {open && term && (
         <div className="sb-res">
           {results.map((p, i) => {
