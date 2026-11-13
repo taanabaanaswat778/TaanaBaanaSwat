@@ -11,7 +11,7 @@ import Footer from "../components/Footer";
 import { buildMenu } from "../menuLinks";
 import { useCart } from "../hooks";
 
-export default function Store({ products, s }) {
+export default function Store({ products, s, loading, error }) {
   const [search, setSearch] = useState("");
   const [menu, setMenu] = useState(false);
   const cart = useCart(products);
@@ -39,7 +39,16 @@ export default function Store({ products, s }) {
 
       <Container className="pb-3" id="shop">
         <h2 className="section-title">All Products</h2>
-        <Collection products={products} s={s} filter="All" search={search} onAdd={(id) => cart.add(id)} onBuy={(id) => cart.buy(id)} />
+        <Collection 
+          products={products} 
+          s={s} 
+          filter="All" 
+          search={search} 
+          onAdd={(id) => cart.add(id)} 
+          onBuy={(id) => cart.buy(id)} 
+          loading={loading}
+          error={error}
+        />
       </Container>
 
       <Footer s={s} />

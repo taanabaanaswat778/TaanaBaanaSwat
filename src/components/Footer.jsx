@@ -1,37 +1,34 @@
 import { Container, Row, Col } from "react-bootstrap";
 import SocialLinks from "./SocialLinks";
+import TaanaBaanaText from "./TaanaBaanaText";
 
 // ===== EDIT THESE =====
 const INFO = {
   address: "Grace Center, Block A G.T Road, Swat Qambar",
-  mapLink: "",                         // optional: paste your Google Maps share link here
+  mapLink: "",                         
   phone: "0309-1812140",
   email: "sawat@taanabaana.pk",
   hours: "Monday - Saturday | 10:00 AM - 09:30 PM",
-  freeShippingAbove: 5000,
-  // Paste your real page links here (leave whatsapp empty to use the phone number above)
+  freeShippingAbove: 25000,
   social: {
     instagram: "https://www.instagram.com/taanabaana.swat?srtk=YmNsYXl5dWJvZjd6&utm_source=qr",
     tiktok: "https://www.tiktok.com/@taanabaanaswat?_r=1&_t=ZS-9AdNpfqdNZM",
     whatsapp: "",
   },
-  payments: ["Cash on Delivery", "JazzCash", "Easypaisa", "Bank Transfer"],
+  payments: ["Cash on Delivery", "Easypaisa", "Bank Transfer"],
   couriers: ["leopard"],
 };
 // ======================
 
-// Address -> Google Maps
 const q = encodeURIComponent(INFO.address + ", Pakistan");
 const mapUrl = INFO.mapLink || `https://www.google.com/maps?q=${q}`;
 const embedUrl = `https://maps.google.com/maps?q=${q}&z=15&output=embed`;
 
-// Phone: 03091-812140 becomes 923091812140 (Pakistan country code)
 const digits = INFO.phone.replace(/\D/g, "");
 const phoneIntl = digits.startsWith("0") ? "92" + digits.slice(1) : digits;
-const callUrl = `tel:+${phoneIntl}`; // clicking the number starts a phone call
+const callUrl = `tel:+${phoneIntl}`;
 const waLink = (number, text) => `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
 
-// Email -> Gmail compose on computers, mail app on phones
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const subject = encodeURIComponent("Question about your suits");
 const emailUrl = isMobile
@@ -39,7 +36,6 @@ const emailUrl = isMobile
   : `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(INFO.email)}&su=${subject}`;
 
 export default function Footer({ s }) {
-  // Uses the number saved in Admin > Settings if there is one, otherwise the phone number above
   const number = s.wa ? s.wa.replace(/\D/g, "") : phoneIntl;
   const contactWa = waLink(number, "Hi, I would like to contact you");
 
@@ -105,7 +101,7 @@ export default function Footer({ s }) {
                 }}
               />
             </div>
-            <div className="fs-4 fw-bold fst-italic">{s.name}</div>
+            <TaanaBaanaText style={{ fontSize: "2rem", marginTop: "10px" }} />
           </Col>
         </Row>
 

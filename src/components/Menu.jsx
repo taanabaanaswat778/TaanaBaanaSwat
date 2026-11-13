@@ -1,5 +1,4 @@
 import { Offcanvas } from "react-bootstrap";
-import logo from "../assets/logo.png";
 
 // The list itself (used inside the slide-out menu)
 export function MenuList({ items, active, onPick = () => {}, children }) {
@@ -27,8 +26,10 @@ export function SideMenu({ show, onHide, title, sub, items, active, children }) 
     <Offcanvas show={show} onHide={onHide} placement="start" className="side-menu">
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>
-          <img src={logo} alt={title} className="menu-logo" />
-          {sub && <div className="small text-muted">{sub}</div>}
+          <div style={{ minHeight: 40 }}>
+             {title}
+          </div>
+          {sub && <div className="small text-muted" style={{ letterSpacing: "2px" }}>{sub}</div>}
         </Offcanvas.Title>
       </Offcanvas.Header>
       <Offcanvas.Body className="p-0">

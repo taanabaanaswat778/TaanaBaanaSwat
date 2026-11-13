@@ -50,16 +50,23 @@ export const collectionName = (f) =>
     Fancy: "Fancy Collection",
   }[f] || f);
 
-// Shrinks an uploaded photo so it saves quickly
-export function resize(file, max = 700, q = 0.78) {
+// Shrinks an uploaded photo so it looks HD but saves quickly
+export function resize(file, max = 1080, q = 0.85) {
   return new Promise((res) => {
     const r = new FileReader();
     r.onload = () => {
       const i = new Image();
       i.onload = () => {
         const k = Math.min(1, max / Math.max(i.width, i.height)), c = document.createElement("canvas");
-        c.width = i.width * k; c.height = i.height * k;
-        c.getContext("2d").drawImage(i, 0, 0, c.width, c.height);
+        c.width = i.width * k; 
+        c.height = i.height * k;
+        const ctx = c.getContext("2d");
+        
+        // This improves the quality of the downscaling
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        
+        ctx.drawImage(i, 0, 0, c.width, c.height);
         res(c.toDataURL("image/jpeg", q));
       };
       i.src = r.result;
@@ -69,7 +76,7 @@ export function resize(file, max = 700, q = 0.78) {
 }
 
 // ===== EDIT: delivery charge =====
-export const SHIPPING = { fee: 250, freeAbove: 5000 };
+export const SHIPPING = { fee: 450, freeAbove: 25000 };
 export const shippingFor = (subtotal) => (subtotal <= 0 || subtotal >= SHIPPING.freeAbove ? 0 : SHIPPING.fee);
 // ===== Stock helpers (quantity left) =====
 export const stockLeft = (p) => (p.qty === undefined || p.qty === null || p.qty === "" ? null : Number(p.qty));

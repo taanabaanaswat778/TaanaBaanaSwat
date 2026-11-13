@@ -5,8 +5,35 @@ import { toast } from "./wishlist";
 
 export function useProducts() {
   const [list, setList] = useState([]);
-  useEffect(() => subProducts(setList), []);
-  return list;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    // If we get data or an error, we stop loading
+    const unsubscribe = subProducts((data) => {
+      setList(data);
+      setLoading(false);
+      setError(false);
+    });
+
+    // Fallback: if it takes more than 8 seconds, stop loading and show error
+    const timer = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          setError(true);
+          return false;
+        }
+        return prev;
+      });
+    }, 8000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
+  }, []);
+
+  return { products: list, loading, error };
 }
 
 export function useSettings() {

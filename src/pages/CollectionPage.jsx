@@ -23,7 +23,7 @@ const INFO = {
 };
 // ====================================================================
 
-export default function CollectionPage({ products, s, name }) {
+export default function CollectionPage({ products, s, name, loading, error }) {
   const cart = useCart(products);
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState("");
@@ -65,7 +65,16 @@ export default function CollectionPage({ products, s, name }) {
       </Container>
 
       <Container className="pb-3" id="shop">
-        <Collection products={products} s={s} filter={name} search={search} onAdd={(id) => cart.add(id)} onBuy={(id) => cart.buy(id)} />
+        <Collection 
+          products={products} 
+          s={s} 
+          filter={name} 
+          search={search} 
+          onAdd={(id) => cart.add(id)} 
+          onBuy={(id) => cart.buy(id)} 
+          loading={loading}
+          error={error}
+        />
       </Container>
 
       <Footer s={s} />

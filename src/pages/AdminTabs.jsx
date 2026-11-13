@@ -26,8 +26,10 @@ export function ProductsTab({ products, s }) {
     });
     setF(EMPTY); setId(null); e.target.reset(); setBusy(false);
   }
+  
   async function pickPhotos(e) {
-    const files = [...e.target.files].slice(0, 4);
+    // Changed to slice(0, 2) to prevent hitting the 1MB Firebase limit with HD images
+    const files = [...e.target.files].slice(0, 2);
     if (!files.length) return;
     const imgs = await Promise.all(files.map((x) => resize(x)));
     setF({ ...f, imgs, img: imgs[0] });
@@ -53,9 +55,11 @@ export function ProductsTab({ products, s }) {
               <option>1 Piece</option><option>2 Piece</option><option>3 Piece</option>
             </Form.Select>
             <Form.Control as="textarea" rows={3} className="mb-2" placeholder="Description (fabric, embroidery, dupatta...)" value={f.desc || ""} onChange={(e) => setF({ ...f, desc: e.target.value })} />
-            <Form.Label className="small mb-0">Photos (up to 4, the first one is the main photo)</Form.Label>
+            
+            <Form.Label className="small mb-0">Photos (up to 2, the first one is the main photo)</Form.Label>
             <Form.Control type="file" accept="image/*" multiple className="mb-2" onChange={pickPhotos} />
             {photos.length > 0 && <div className="d-flex gap-2 mb-2">{photos.map((src, k) => <img key={k} src={src} className="thumb" alt="" />)}</div>}
+            
             <Form.Check type="checkbox" id="isNew" className="mb-2" label="New arrival" checked={!!f.isNew} onChange={(e) => setF({ ...f, isNew: e.target.checked })} />
             <Form.Select className="mb-3" value={f.stock ? "1" : "0"} onChange={(e) => setF({ ...f, stock: e.target.value === "1" })}>
               <option value="1">In stock</option><option value="0">Out of stock</option>
@@ -162,9 +166,11 @@ export function SettingsTab({ s }) {
   const [f, setF] = useState(s);
   const [ok, setOk] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  
   const pickSlide = (k) => async (e) => {
     const file = e.target.files[0];
-    if (file) setF({ ...f, [k]: await resize(file, 1400, 0.6) });
+    // Increased from 1400, 0.6 to 1600, 0.8 for crisper banner images
+    if (file) setF({ ...f, [k]: await resize(file, 1600, 0.8) });
   };
 
   return (

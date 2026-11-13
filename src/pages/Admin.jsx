@@ -4,6 +4,7 @@ import { DEMO, onAuth, subOrders, login, logout, isAdmin } from "../data";
 import { SideMenu } from "../components/Menu";
 import Dashboard from "./Dashboard";
 import { ProductsTab, OrdersTab, SettingsTab } from "./AdminTabs";
+import TaanaBaanaText from "../components/TaanaBaanaText";
 
 export default function Admin({ products, s }) {
   const [user, setUser] = useState(undefined);
@@ -37,12 +38,12 @@ export default function Admin({ products, s }) {
   }
 
   const items = [
-    { key: "dashboard", label: "Dashboard", onClick: () => setTab("dashboard") },
-    { key: "products", label: "Products", onClick: () => setTab("products") },
-    { key: "orders", label: "Orders", badge: orders.filter((o) => o.status === "new").length || null, onClick: () => setTab("orders") },
-    { key: "settings", label: "Settings", onClick: () => setTab("settings") },
-    { key: "store", label: "View Store", onClick: () => (window.location.hash = "#/") },
-    { key: "out", label: "Log out", onClick: () => logout() },
+    { key: "dashboard", label: "📊 Dashboard", onClick: () => setTab("dashboard") },
+    { key: "products", label: "👕 Products", onClick: () => setTab("products") },
+    { key: "orders", label: "📦 Orders", badge: orders.filter((o) => o.status === "new").length || null, onClick: () => setTab("orders") },
+    { key: "settings", label: "⚙️ Settings", onClick: () => setTab("settings") },
+    { key: "store", label: "🛍 View Store", onClick: () => (window.location.hash = "#/") },
+    { key: "out", label: "🚪 Log out", onClick: () => logout() },
   ];
 
   return (
@@ -54,7 +55,16 @@ export default function Admin({ products, s }) {
           <Button variant="link" className="text-white p-0 justify-self-end text-decoration-none small" onClick={() => (window.location.hash = "#/")}>Store ↗</Button>
         </Container>
       </Navbar>
-      <SideMenu show={menu} onHide={() => setMenu(false)} title={`${s.name} Admin`} items={items} active={tab} />
+      
+      <SideMenu 
+        show={menu} 
+        onHide={() => setMenu(false)} 
+        title={<TaanaBaanaText style={{ fontSize: "1.8rem", color: "#fff", margin: "5px 0" }} />} 
+        sub="ADMIN"
+        items={items} 
+        active={tab} 
+      />
+      
       <Container className="py-3">
         {tab === "dashboard" && <Dashboard products={products} orders={orders} s={s} />}
         {tab === "products" && <ProductsTab products={products} s={s} />}
