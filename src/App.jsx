@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { LOCAL, LOCAL_REASON, auth, ADMIN_UID, STORE_URL } from "./firebase";
+import { collection, onSnapshot } from "firebase/firestore"; // Added for discounts
+import { db, LOCAL, LOCAL_REASON, auth, ADMIN_UID, STORE_URL } from "./firebase";
 import { subProducts, subOrders, resetLocal } from "./db";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -9,41 +10,29 @@ import Prices from "./pages/Prices";
 import Orders from "./pages/Orders";
 import Stock from "./pages/Stock";
 import Customers from "./pages/Customers";
+import Discounts from "./pages/Discounts"; // New Import
 import SearchBox from "./components/SearchBox";
-import { PiSquaresFour, PiTShirt, PiTag, PiDownloadSimple, PiPackage, PiUsers, PiGlobe, PiSignOut, PiWifiSlash } from "react-icons/pi";
+import { PiSquaresFour, PiTShirt, PiTag, PiDownloadSimple, PiPackage, PiUsers, PiGlobe, PiSignOut, PiTicket } from "react-icons/pi";
 
 const NAV = [
   ["dashboard", "Dashboard", <PiSquaresFour />],
   ["products", "Products", <PiTShirt />],
   ["prices", "Category Prices", <PiTag />],
+  ["discounts", "Discount Codes", <PiTicket />], // New Nav Item
   ["stock", "Import Stock", <PiDownloadSimple />],
   ["orders", "Orders", <PiPackage />],
   ["customers", "Customers", <PiUsers />],
 ];
 const readPage = () => window.location.hash.replace("#/", "") || "dashboard";
 
-// A beautiful spinner for the initial load
-const PageLoader = () => (
-  <div className="center-note">
-    <svg className="spinner" viewBox="0 0 50 50" style={{ width: 40, height: 40, margin: "0 auto 16px" }}>
-      <circle className="path" cx="25" cy="25" r="20" fill="none" strokeWidth="4" strokeLinecap="round"></circle>
-    </svg>
-    <h3>Connecting to Firebase…</h3>
-    <p>Loading your products and orders.</p>
-  </div>
-);
-
 export default function App() {
   const [user, setUser] = useState(LOCAL ? { uid: "local", email: "local mode" } : undefined);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  
-  // Loading and error states
-  const [dataLoading, setDataLoading] = useState(true);
-  const [connectionError, setConnectionError] = useState(false);
-
+  const [discounts, setDiscounts] = useState([]); // New State
   const [page, setPage] = useState(readPage());
   const [nav, setNav] = useState(false);
+  const [readErr, setReadErr] = useState("");
   const [editId, setEditId] = useState(null);
 
   const ok = LOCAL || (!!user && (!ADMIN_UID || user.uid === ADMIN_UID));
@@ -61,68 +50,34 @@ export default function App() {
 
   useEffect(() => {
     if (!ok) return;
-
-    // Timer to show error screen if Firebase takes more than 8 seconds
-    const timer = setTimeout(() => {
-      if (dataLoading && !products.length && !orders.length) {
-        setConnectionError(true);
-        setDataLoading(false);
-      }
-    }, 8000);
-
     const fail = (what) => (e) => {
       console.error(e);
-      if (!products.length && !orders.length) {
-        setConnectionError(true);
-        setDataLoading(false);
-      }
+      setReadErr(`Could not read ${what} from Firebase (${e.code || e.message}).`);
     };
-
-    const a = subProducts(
-      (data) => {
-        setProducts(data);
-        setDataLoading(false);
-        setConnectionError(false);
-      },
-      fail("products")
-    );
     
-    const b = subOrders(
-      (data) => {
-        setOrders(data);
-        setDataLoading(false);
-        setConnectionError(false);
-      },
-      fail("orders")
-    );
+    const a = subProducts(setProducts, fail("products"));
+    const b = subOrders(setOrders, fail("orders"));
+    
+    // Fetch discounts
+    let c = () => {};
+    if (!LOCAL) {
+      c = onSnapshot(collection(db, "discounts"), (snapshot) => {
+        setDiscounts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }, fail("discounts"));
+    }
 
-    return () => { a(); b(); clearTimeout(timer); };
+    return () => { a(); b(); c(); };
   }, [ok]);
 
-  if (user === undefined) return <PageLoader />;
+  if (user === undefined) return <p className="center-note">Loading…</p>;
   if (!ok) return <Login user={user} />;
-
-  // Show Error screen if connection fails or times out
-  if (connectionError && !products.length && !orders.length) {
-    return (
-      <div className="center-note" style={{ maxWidth: 400, margin: "80px auto" }}>
-        <PiWifiSlash size={48} color="var(--ac)" style={{ marginBottom: 16 }} />
-        <h2>Connection Timeout</h2>
-        <p className="hint" style={{ marginBottom: 24 }}>
-          We could not connect to your Firebase database. This usually happens due to a weak internet connection. Please check your internet and try again.
-        </p>
-        <button className="btn" style={{ width: "100%" }} onClick={() => window.location.reload()}>
-          Retry Connection
-        </button>
-      </div>
-    );
-  }
 
   const newOrders = orders.filter((o) => o.status === "new").length;
   
   const view =
     page === "products" ? <Products products={products} openId={editId} onOpened={() => setEditId(null)} />
     : page === "prices" ? <Prices products={products} />
+    : page === "discounts" ? <Discounts discounts={discounts} /> // New Route
     : page === "stock" ? <Stock products={products} />
     : page === "orders" ? <Orders orders={orders} />
     : page === "customers" ? <Customers orders={orders} />
@@ -163,13 +118,8 @@ export default function App() {
           <SearchBox products={products} onPick={(p) => { setEditId(p.id); window.location.hash = "#/products"; }} />
         </header>
         {LOCAL && <div className="banner">Local mode: Firebase is OFF, so nothing reaches your store. {LOCAL_REASON}</div>}
-        
-        {/* Show loader inline if data is still loading but page is rendered */}
-        {dataLoading && !products.length ? (
-          <div className="content"><PageLoader /></div>
-        ) : (
-          <div className="content">{view}</div>
-        )}
+        {readErr && <div className="banner bad">{readErr}</div>}
+        <div className="content">{view}</div>
       </div>
     </div>
   );

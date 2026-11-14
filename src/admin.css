@@ -743,3 +743,422 @@ td { padding: 10px; border-bottom: 1px solid #f1ede6; vertical-align: middle; }
   50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
   100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
 }
+/* ===== Beautiful Category Prices Page ===== */
+.prices-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Category Table */
+.categories-table td {
+  vertical-align: middle;
+  padding: 16px 12px;
+}
+.badge-count {
+  background: #f1ede6;
+  color: var(--ink);
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-sale {
+  background: #fff0cf;
+  color: #8a5a00;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.btn-select {
+  background: #fff;
+  border: 1px solid #d6cfc4;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  color: var(--ink);
+}
+.btn-select:hover {
+  background: #faf7f2;
+  border-color: var(--ac);
+  color: var(--ac);
+}
+.btn-select.on {
+  background: #e7f6ec;
+  border-color: #b7e0c4;
+  color: #17653a;
+}
+
+/* Update Grid */
+.update-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: end;
+}
+.update-grid label {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Icon inside inputs */
+.input-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-icon svg, .input-icon span {
+  position: absolute;
+  left: 12px;
+  color: #a8a29e;
+  font-size: 16px;
+}
+.input-icon input {
+  padding-left: 38px !important;
+}
+
+/* Hint Box */
+.hint-box {
+  background: #f8f5f1;
+  border: 1px solid #e7e2da;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--mut);
+  margin-bottom: 16px;
+}
+
+/* Preview Table */
+.preview-table td {
+  vertical-align: middle;
+  padding: 12px 10px;
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.status-badge.active { background: #e7f6ec; color: #17653a; }
+.status-badge.scheduled { background: #dbeafe; color: #1d4ed8; }
+.status-badge.ended { background: #fde8e8; color: #9b1c1c; }
+
+/* Big Apply Button */
+.update-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  font-size: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+}
+/* ===== Beautiful Dashboard ===== */
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Connection Info */
+.connection-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.user-details {
+  background: #faf7f2;
+  border: 1px solid #e7e2da;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ud-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.ud-label {
+  color: var(--mut);
+  font-weight: 600;
+}
+.ud-val {
+  font-weight: 600;
+  color: var(--ink);
+}
+.btn-copy {
+  background: #fff;
+  border: 1px solid #d6cfc4;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink);
+}
+.btn-copy:hover { background: #f1ede6; }
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+.stat-card.large {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #fff, #faf7f2);
+  border: 1px solid #e7e2da;
+}
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.stat-data {
+  display: flex;
+  flex-direction: column;
+}
+.stat-label {
+  font-size: 13px;
+  color: var(--mut);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+.stat-card.large .stat-value {
+  font-size: 32px;
+  color: var(--ac);
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.qa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.qa-btn.primary {
+  background: var(--ac);
+  color: #fff;
+}
+.qa-btn.primary:hover {
+  background: #6e2020;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(138,44,44,.3);
+}
+.qa-btn.secondary {
+  background: #fff;
+  color: var(--ink);
+  border-color: #d6cfc4;
+}
+.qa-btn.secondary:hover {
+  background: #faf7f2;
+  border-color: var(--ac);
+  color: var(--ac);
+  transform: translateY(-2px);
+}
+
+/* Status Badges for Recent Orders */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+.status-badge.new { background: #fff0cf; color: #8a5a00; }
+.status-badge.confirmed { background: #dbeafe; color: #1d4ed8; }
+.status-badge.shipped { background: #e0e7ff; color: #4338ca; }
+.status-badge.delivered { background: #e7f6ec; color: #17653a; }
+.status-badge.cancelled { background: #fde8e8; color: #9b1c1c; }
+/* ===== Discount Codes Page ===== */
+.discount-card {
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.04) !important;
+  background: #fff;
+}
+
+.discount-title {
+  font-weight: 800;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  font-size: 18px;
+}
+
+/* Elegant Toggle for % vs Fixed */
+.discount-toggle-wrap {
+  display: flex;
+  background: #f6f3ee;
+  padding: 4px;
+  border-radius: 99px;
+  border: 1px solid #e7e2da;
+}
+
+.discount-toggle-btn {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mut);
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.discount-toggle-btn:hover {
+  color: var(--ink);
+}
+
+.discount-toggle-btn.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Large Inputs */
+.input-lg {
+  padding: 14px 16px !important;
+  font-size: 15px !important;
+  border-radius: 12px !important;
+  border: 1px solid #d6cfc4 !important;
+}
+
+.input-lg:focus {
+  border-color: var(--ac) !important;
+  box-shadow: 0 0 0 3px rgba(138,44,44,.1) !important;
+}
+
+.input-code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Premium Table */
+.promo-table thead th {
+  background: #faf7f2;
+  color: var(--mut);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e7e2da;
+}
+
+.promo-table tbody td {
+  padding: 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1ede6;
+}
+
+.promo-table tbody tr:hover {
+  background: #faf7f2;
+}
+
+/* Ticket style code badge */
+.code-ticket {
+  display: inline-block;
+  background: #1c1917;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+/* Icon action buttons */
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e7e2da;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--mut);
+}
+
+.action-btn:hover {
+  background: #f5f2ec;
+  color: var(--ink);
+  border-color: #d6cfc4;
+}
+
+.action-btn.del:hover {
+  background: #fde8e8;
+  color: #b42318;
+  border-color: #f0c2bd;
+}

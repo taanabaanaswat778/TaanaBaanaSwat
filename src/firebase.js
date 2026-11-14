@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore"; 
 import { getAuth } from "firebase/auth";
 
 const env = (v) => String(v || "").trim();
@@ -25,8 +25,14 @@ export const LOCAL_REASON = forced
   : "";
 
 const app = LOCAL ? null : initializeApp(cfg);
-export const db = app ? getFirestore(app) : null;
+
+// Use initializeFirestore with Long-Polling to fix connection drops on weak networks
+export const db = app ? initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+  useFetchStreams: false
+}) : null;
+
 export const auth = app ? getAuth(app) : null;
 export const PROJECT_ID = cfg.projectId;
-export const ADMIN_UID = env(import.meta.env.VITE_ADMIN_UID); // optional: leave empty to allow any signed-in user (Firestore rules still protect your data)
+export const ADMIN_UID = env(import.meta.env.VITE_ADMIN_UID);
 export const STORE_URL = env(import.meta.env.VITE_STORE_URL);

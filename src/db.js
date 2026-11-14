@@ -140,3 +140,22 @@ export async function deleteOrder(id) {
 
 // Updates several products at once: changes = [{ id, qty, stock }, ...]  (any fields can be included)
 export const updateProducts = (changes) => updatePrices(changes);
+/* ================= DISCOUNTS ================= */
+export async function saveDiscount(id, data) {
+  if (LOCAL) {
+    const l = read("discounts") || [];
+    const newItem = id ? { ...data, id } : { ...data, id: "d" + Date.now(), createdAt: Date.now() };
+    write("discounts", id ? l.map((d) => (d.id === id ? newItem : d)) : [newItem, ...l]);
+    return newItem.id;
+  }
+  if (id) {
+    return setDoc(doc(db, "discounts", id), data, { merge: true });
+  } else {
+    return addDoc(collection(db, "discounts"), { ...data, createdAt: serverTimestamp() });
+  }
+}
+
+export async function deleteDiscount(id) {
+  if (LOCAL) return write("discounts", (read("discounts") || []).filter((d) => d.id !== id));
+  return deleteDoc(doc(db, "discounts", id));
+}
