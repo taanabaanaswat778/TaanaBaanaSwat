@@ -20,6 +20,7 @@ export default function Store({ products, s, loading, error }) {
   const go = (f) => { window.location.hash = "#/c/" + encodeURIComponent(f); };
   const menuItems = buildMenu(products, go);
   const wa = s.wa ? `https://wa.me/${s.wa.replace(/\D/g, "")}` : "";
+  
   const links = (
     <div className="mt-4 border-top pt-2">
       <a className="menu-link" href="#/track">Track Your Order</a>
@@ -29,11 +30,30 @@ export default function Store({ products, s, loading, error }) {
 
   return (
     <>
-      <Header s={s} count={cart.count} onMenu={() => setMenu(true)} onCart={() => cart.setOpen(true)} search={search} setSearch={setSearch} links={menuItems} active="" />
-      <SideMenu show={menu} onHide={() => setMenu(false)} title={s.name} items={menuItems} active="">{links}</SideMenu>
-      {DEMO && <div className="bg-warning-subtle text-center small py-1">Demo mode: data is saved in this browser only. Add Firebase keys to go live.</div>}
+      <Header 
+        s={s} 
+        count={cart.count} 
+        onMenu={() => setMenu(true)} 
+        onCart={() => cart.setOpen(true)} 
+        search={search} 
+        setSearch={setSearch} 
+        links={menuItems} 
+        active="" 
+      />
+      
+      <SideMenu show={menu} onHide={() => setMenu(false)} title={s.name} items={menuItems} active="">
+        {links}
+      </SideMenu>
 
-      <Hero s={s} products={products} />
+      {DEMO && (
+        <div className="bg-warning-subtle text-center small py-1">
+          Demo mode: data is saved in this browser only. Add Firebase keys to go live.
+        </div>
+      )}
+
+      {/* Pass loading to Hero */}
+      <Hero s={s} products={products} loading={loading} />
+      
       <TrustStrip />
       <PromoCards products={products} onPick={go} />
 
@@ -52,7 +72,17 @@ export default function Store({ products, s, loading, error }) {
       </Container>
 
       <Footer s={s} />
-      <Cart show={cart.open} onHide={() => cart.setOpen(false)} items={cart.items} products={products} s={s} qty={cart.qty} remove={cart.remove} add={cart.add} />
+      
+      <Cart 
+        show={cart.open} 
+        onHide={() => cart.setOpen(false)} 
+        items={cart.items} 
+        products={products} 
+        s={s} 
+        qty={cart.qty} 
+        remove={cart.remove} 
+        add={cart.add} 
+      />
     </>
   );
 }

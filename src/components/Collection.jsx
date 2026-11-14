@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Row, Col, Badge, Button, Form, Spinner } from "react-bootstrap";
 import { eff, money, shortDate, inCollection, collectionName, inStock, stockLeft, remainText } from "../utils";
 import { toggleWishlist, useWishlist } from "../wishlist";
+import { DEMO } from "../data";
 
 export function ProductCard({ p, s, onAdd, onBuy }) {
   const onSale = eff(p) < p.price;
@@ -12,9 +13,7 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
 
   return (
     <Col className="text-center">
-      {/* product-card class for hover animations */}
       <div className="product-card position-relative">
-        
         <div className="product-img-wrap position-relative overflow-hidden">
           <a href={href} className="card-link">
             {p.img ? <img src={p.img} alt={p.name} className="product-img w-100" /> : <div className="product-ph">👗</div>}
@@ -31,7 +30,9 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
         </div>
 
         <a href={href} className="card-link">
-          <div className="small fw-semibold mt-2 product-title">{p.pieces ? `${p.pieces} - ` : ""}{p.name}{p.pieces ? " (Unstitched)" : ""}</div>
+          <div className="small fw-semibold mt-2 product-title">
+            {p.pieces ? `${p.pieces} - ` : ""}{p.name || "Product"}{p.pieces ? " (Unstitched)" : ""}
+          </div>
         </a>
         <div className="mb-1 small">
           <span className={onSale ? "text-danger fw-bold" : "text-muted"}>{money(s, eff(p))}</span>
@@ -44,7 +45,6 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
         <div className="product-actions mt-2">
           {inStock(p) ? (
             <div className="d-flex gap-1 justify-content-center flex-wrap">
-              {/* Added btn-add-cart class to keep it dark on hover */}
               <Button size="sm" variant="dark" className="pill px-3 btn-add-cart" onClick={() => onAdd(p.id)}>Add to cart</Button>
               <Button size="sm" variant="outline-dark" className="pill px-3" onClick={() => onBuy(p.id)}>Buy now</Button>
             </div>
@@ -55,7 +55,7 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
   );
 }
 
-export default function Collection({ products, s, filter, search = "", onAdd, onBuy, loading, error }) {
+export default function Collection({ products = [], s, filter, search = "", onAdd, onBuy, loading, error }) {
   const [sort, setSort] = useState("rel");
   const [cols, setCols] = useState(4);
   const [visibleCount, setVisibleCount] = useState(16);
@@ -64,8 +64,9 @@ export default function Collection({ products, s, filter, search = "", onAdd, on
     setVisibleCount(16);
   }, [filter, search, sort]);
 
+  const safeProducts = Array.isArray(products) ? products : [];
   const q = search.trim().toLowerCase();
-  let shown = products.filter((p) => inCollection(p, filter) && (!q || p.name.toLowerCase().includes(q)));
+  let shown = safeProducts.filter((p) => inCollection(p, filter) && (!q || (p.name && p.name.toLowerCase().includes(q))));
   
   if (sort === "low") shown = [...shown].sort((a, b) => eff(a) - eff(b));
   if (sort === "high") shown = [...shown].sort((a, b) => eff(b) - eff(a));
@@ -73,7 +74,6 @@ export default function Collection({ products, s, filter, search = "", onAdd, on
   const label = filter === "All" ? "All products" : collectionName(filter);
   const visibleProducts = shown.slice(0, visibleCount);
 
-  // 1. Show Loader
   if (loading) {
     return (
       <div className="text-center py-5">
@@ -83,15 +83,18 @@ export default function Collection({ products, s, filter, search = "", onAdd, on
     );
   }
 
-  // 2. Show Error / Retry screen
-  if (error && !products.length) {
+  if (error) {
     return (
-      <div className="text-center py-5">
-        <div style={{ fontSize: 44 }}>📶</div>
-        <h5 className="mt-3">Internet connection is slow</h5>
-        <p className="text-muted">We couldn't load the products. Please check your connection and try again.</p>
+      <div className="text-center py-5" style={{ maxWidth: 600, margin: "0 auto" }}>
+        <div style={{ fontSize: 44, marginBottom: 16 }}>📶</div>
+        <h4 className="mb-3">Could not load products</h4>
+        <p className="text-muted">{error.message || "Please check your internet connection and try again."}</p>
+        <div className="text-start bg-light p-3 rounded mb-4 small" style={{ border: "1px solid #ddd" }}>
+          <h6 className="mb-2 text-dark">Debug Info:</h6>
+          <div><b>Mode:</b> {DEMO ? "Demo Mode" : "Live (Firebase Connected)"}</div>
+        </div>
         <Button variant="dark" className="pill px-4 mt-2" onClick={() => window.location.reload()}>
-          Retry
+          Retry Connection
         </Button>
       </div>
     );

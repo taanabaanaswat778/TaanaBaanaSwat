@@ -9,12 +9,20 @@ const Trash = () => (
 );
 const nameOf = (p) => `${p.pieces ? p.pieces + " - " : ""}${p.name}${p.pieces ? " (Unstitched)" : ""}`;
 
+// Added products = [] to prevent crash
 export default function Cart({ show, onHide, items, products = [], s, qty, remove, add }) {
   const [k, setK] = useState(0);
+  
+  // SAFETY CHECK: Ensure products is an array before filtering
+  const safeProducts = Array.isArray(products) ? products : [];
+
   const subtotal = items.reduce((a, { p, q }) => a + eff(p) * q, 0);
   const inCart = new Set(items.map(({ p }) => p.id));
-  const rel = products.filter((p) => !inCart.has(p.id) && p.stock).slice(0, 5);
+  
+  // Use safeProducts here
+  const rel = safeProducts.filter((p) => !inCart.has(p.id) && p.stock).slice(0, 5);
   const cur = rel.length ? rel[k % rel.length] : null;
+  
   const left = Math.max(0, SHIPPING.freeAbove - subtotal);
   const pct = Math.min(100, (subtotal / SHIPPING.freeAbove) * 100);
   const checkout = () => { onHide(); window.location.hash = "#/checkout"; };

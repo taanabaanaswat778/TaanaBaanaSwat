@@ -6,31 +6,23 @@ import { toast } from "./wishlist";
 export function useProducts() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // If we get data or an error, we stop loading
-    const unsubscribe = subProducts((data) => {
-      setList(data);
-      setLoading(false);
-      setError(false);
-    });
+    const unsubscribe = subProducts(
+      (data) => {
+        setList(data);
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        console.error("Firebase Error:", err);
+        setLoading(false);
+        setError(err);
+      }
+    );
 
-    // Fallback: if it takes more than 8 seconds, stop loading and show error
-    const timer = setTimeout(() => {
-      setLoading((prev) => {
-        if (prev) {
-          setError(true);
-          return false;
-        }
-        return prev;
-      });
-    }, 8000);
-
-    return () => {
-      unsubscribe();
-      clearTimeout(timer);
-    };
+    return () => unsubscribe();
   }, []);
 
   return { products: list, loading, error };
@@ -42,7 +34,6 @@ export function useSettings() {
   return s;
 }
 
-// Shared cart (saved in the browser, so it works on every page)
 export function useCart(products) {
   const [cart, setCart] = useState(() => { try { return JSON.parse(localStorage.getItem("cart") || "[]"); } catch { return []; } });
   const [open, setOpen] = useState(false);
@@ -51,7 +42,6 @@ export function useCart(products) {
   const items = cart.map((c) => ({ p: products.find((x) => x.id === c.id), q: c.q })).filter((x) => x.p);
   const count = cart.reduce((a, c) => a + c.q, 0);
 
-  // how many of this product can be bought (Infinity = no limit set)
   const capOf = (id) => {
     const p = products.find((x) => x.id === id);
     const n = p ? stockLeft(p) : null;
