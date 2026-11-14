@@ -10,6 +10,10 @@ import { buildMenu } from "../menuLinks";
 import { useCart } from "../hooks";
 import { toggleWishlist, useWishlist } from "../wishlist";
 import { eff, money, shortDate, saleActive, inStock, stockLeft, remainText, waUrl, productLink } from "../utils";
+import { 
+  PiHeart, PiHeartFill, PiTruck, PiShieldCheck, PiWhatsappLogo, 
+  PiCaretLeft, PiCaretRight, PiCheckCircle, PiArrowRight
+} from "react-icons/pi";
 
 // ===== EDIT: care instructions shown on every product =====
 const CARE = ["Dry clean recommended", "Do not bleach", "Iron on low heat", "Wash dark colours separately"];
@@ -25,7 +29,7 @@ export default function Product({ products, s, id }) {
 
   useEffect(() => { setN(1); setI(0); }, [id]);
   useEffect(() => {
-    const f = () => setBar(window.scrollY > 500);
+    const f = () => setBar(window.scrollY > 600);
     f();
     window.addEventListener("scroll", f);
     return () => window.removeEventListener("scroll", f);
@@ -64,6 +68,7 @@ export default function Product({ products, s, id }) {
   const onSale = eff(p) < p.price;
   const off = onSale ? Math.round(100 - (eff(p) / p.price) * 100) : 0;
   const title = `${p.pieces ? p.pieces + " - " : ""}${p.name}${p.pieces ? " (Unstitched)" : ""}`;
+  
   const rel = [
     ...products.filter((x) => x.id !== p.id && x.cat === p.cat),
     ...products.filter((x) => x.id !== p.id && x.cat !== p.cat),
@@ -83,134 +88,182 @@ export default function Product({ products, s, id }) {
 
   const Qty = (
     <div className="pd-qty">
-      <button onClick={() => setN(Math.max(1, n - 1))} aria-label="Decrease">−</button>
+      <button onClick={() => setN(Math.max(1, n - 1))} disabled={n <= 1} aria-label="Decrease">−</button>
       <span>{n}</span>
-      <button onClick={() => setN(Math.min(max, n + 1))} aria-label="Increase">+</button>
+      <button onClick={() => setN(Math.min(max, n + 1))} disabled={n >= max} aria-label="Increase">+</button>
     </div>
   );
 
   return shell(
     <>
       <Container className="py-4 pd-wrap">
-        <Breadcrumb
-          items={[
-            { label: "Home", href: "#/" },
-            ...(p.cat ? [{ label: p.cat, href: "#/c/" + encodeURIComponent(p.cat) }] : []),
-            { label: p.name },
-          ]}
-        />
-        <Row className="g-4 mt-1">
-          <Col md={7}>
-            <div className="pd-gallery">
+        <div className="mb-3">
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "#/" },
+              ...(p.cat ? [{ label: p.cat, href: "#/c/" + encodeURIComponent(p.cat) }] : []),
+              { label: p.name },
+            ]}
+          />
+        </div>
+
+        <Row className="g-4 g-lg-5 mt-1">
+          {/* LEFT: GALLERY */}
+          <Col lg={7}>
+            <div className="pd-gallery-modern">
               {imgs.length > 1 && (
-                <div className="pd-thumbs">
-                  {imgs.map((src, k) => <img key={k} src={src} alt="" className={k === i ? "on" : ""} onClick={() => setI(k)} />)}
+                <div className="pd-thumbs-modern">
+                  {imgs.map((src, k) => (
+                    <img 
+                      key={k} 
+                      src={src} 
+                      alt="" 
+                      className={k === i ? "on" : ""} 
+                      onClick={() => setI(k)} 
+                    />
+                  ))}
                 </div>
               )}
-              <div className="pd-main">
+              <div className="pd-main-modern">
                 {cur ? <img src={cur} alt={p.name} /> : <div className="product-ph">👗</div>}
-                {onSale && <span className="pd-off">-{off}%</span>}
+                {onSale && <span className="pd-off">{off}% OFF</span>}
+                
                 {imgs.length > 1 && (
                   <>
-                    <button className="pd-arrow l" onClick={() => setI((i - 1 + imgs.length) % imgs.length)} aria-label="Previous">‹</button>
-                    <button className="pd-arrow r" onClick={() => setI((i + 1) % imgs.length)} aria-label="Next">›</button>
+                    <button className="pd-arrow-modern l" onClick={() => setI((i - 1 + imgs.length) % imgs.length)} aria-label="Previous">
+                      <PiCaretLeft />
+                    </button>
+                    <button className="pd-arrow-modern r" onClick={() => setI((i + 1) % imgs.length)} aria-label="Next">
+                      <PiCaretRight />
+                    </button>
                   </>
                 )}
               </div>
             </div>
           </Col>
 
-          <Col md={5}>
-            <h1 className="pd-title">{title}</h1>
-            <div className="pd-price my-2">
-              {onSale && <s>{money(s, p.price)}</s>}
-              <b>{money(s, eff(p))}</b>
-            </div>
-            <div className="text-muted small mb-1">Availability: <span className="text-dark">{available ? "In Stock" : "Out of Stock"}</span></div>
-            {remain && <div className={"remain mb-3" + (left <= 3 ? " low" : "")}>{remain}</div>}
-
-            <div className="d-flex gap-2 flex-wrap mb-3 mt-2">
-              {available && (
-                <>
-                  {Qty}
-                  <Button variant="dark" className="pill px-4" onClick={addNow}>Add to cart</Button>
-                  <Button variant="outline-dark" className="pill px-4" onClick={() => cart.buy(p.id, n)}>Buy now</Button>
-                </>
-              )}
-              <Button
-                variant={liked ? "danger" : "outline-secondary"}
-                className="pill px-3"
-                onClick={() => toggleWishlist(p.id)}
-              >{liked ? "♥ In wishlist" : "♡ Add to wishlist"}</Button>
-            </div>
-            {liked && <div className="small mb-3"><a href="#/wishlist">View my wishlist →</a></div>}
-
-            {!available && (
-              <div className="req-box">
-                <p className="mb-2"><b>This design is out of stock.</b> Save it to your wishlist, or send us a WhatsApp for details and availability.</p>
-                <a className="btn btn-success pill px-4" href={askOut} target="_blank" rel="noreferrer">Request on WhatsApp</a>
+          {/* RIGHT: DETAILS */}
+          <Col lg={5}>
+            <div className="pd-info">
+              <h1 className="pd-title-modern">{title}</h1>
+              
+              <div className="pd-price-modern">
+                {onSale && <s>{money(s, p.price)}</s>}
+                <b>{money(s, eff(p))}</b>
+                {onSale && <span className="pd-save-badge">Save {money(s, p.price - eff(p))}</span>}
               </div>
-            )}
 
-            {available && left !== null && (
-              <div className="req-box">
-                <div className="small mb-2">Need a larger quantity than {left}?</div>
-                <div className="d-flex gap-2 flex-wrap">
-                  <a className="btn btn-success btn-sm pill px-3" href={askMore} target="_blank" rel="noreferrer">WhatsApp us</a>
-                  <Button size="sm" variant="outline-dark" className="pill px-3" onClick={needMore}>♡ Add to wishlist &amp; request</Button>
+              <div className="pd-stock">
+                {available ? (
+                  <span className="in-stock"><PiCheckCircle /> In Stock {remain && <span className="remain-text">({remain})</span>}</span>
+                ) : (
+                  <span className="out-stock">Out of Stock</span>
+                )}
+              </div>
+
+              <div className="pd-actions-row">
+                {available && (
+                  <>
+                    {Qty}
+                    <Button variant="dark" className="btn-add-cart" onClick={addNow}>Add to cart</Button>
+                    <Button variant="outline-dark" className="btn-buy-now" onClick={() => cart.buy(p.id, n)}>Buy now</Button>
+                  </>
+                )}
+                <button 
+                  className={"pd-wish-btn " + (liked ? "on" : "")} 
+                  onClick={() => toggleWishlist(p.id)}
+                  title={liked ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                  {liked ? <PiHeartFill /> : <PiHeart />}
+                </button>
+              </div>
+
+              {!available && (
+                <div className="pd-request-box out">
+                  <p><b>This design is currently out of stock.</b> Save it to your wishlist, or message us on WhatsApp for details and availability.</p>
+                  <a className="btn-wa" href={askOut} target="_blank" rel="noreferrer">
+                    <PiWhatsappLogo size={18} /> Request on WhatsApp
+                  </a>
                 </div>
-              </div>
-            )}
+              )}
 
-            <Accordion flush className="pd-acc">
-              <Accordion.Item eventKey="0">
-                <Accordion.Header>Description</Accordion.Header>
-                <Accordion.Body>{desc}</Accordion.Body>
-              </Accordion.Item>
-              <Accordion.Item eventKey="1">
-                <Accordion.Header>Delivery &amp; Returns</Accordion.Header>
-                <Accordion.Body>
-                  Standard delivery within Pakistan is 4-5 working days (Sat-Sun are not included). Sale items are non-exchangeable.{" "}
-                  <a href="#/policy/shipping">Read full shipping policy</a>
-                </Accordion.Body>
-              </Accordion.Item>
-              <Accordion.Item eventKey="2">
-                <Accordion.Header>Care Instructions</Accordion.Header>
-                <Accordion.Body><ul className="mb-0">{CARE.map((c) => <li key={c}>{c}</li>)}</ul></Accordion.Body>
-              </Accordion.Item>
-            </Accordion>
+              {available && left !== null && (
+                <div className="pd-request-box">
+                  <div className="pd-req-text">
+                    Need a larger quantity than {left}? We can arrange it for you.
+                  </div>
+                  <div className="pd-req-actions">
+                    <a className="btn-wa" href={askMore} target="_blank" rel="noreferrer">
+                      <PiWhatsappLogo size={18} /> WhatsApp us
+                    </a>
+                    <Button size="sm" variant="outline-dark" className="btn-wish-req" onClick={needMore}>
+                      <PiHeart /> Request
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-            {saleActive(p) && (
-              <div className="pd-banner">
-                <b>End of Season Sale</b>
-                <div className="small">{p.saleEnd ? `Sale ends ${shortDate(p.saleEnd)}` : "Limited time deals on our best selling collections"}</div>
+              {saleActive(p) && (
+                <div className="pd-sale-banner">
+                  <b>End of Season Sale</b>
+                  <span>{p.saleEnd ? `Ends ${shortDate(p.saleEnd)}` : "Limited time deals"}</span>
+                </div>
+              )}
+
+              <div className="pd-trust">
+                <div className="pd-trust-item"><PiTruck size={20} /> Free delivery on orders above Rs. 5,000</div>
+                <div className="pd-trust-item"><PiShieldCheck size={20} /> Cash on Delivery available</div>
               </div>
-            )}
-            <div className="small text-muted">🚚 Free shipping nationwide on orders above {s.cur}5,000</div>
+
+              <Accordion flush className="pd-acc">
+                <Accordion.Item eventKey="0">
+                  <Accordion.Header>Description</Accordion.Header>
+                  <Accordion.Body>{desc}</Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1">
+                  <Accordion.Header>Delivery &amp; Returns</Accordion.Header>
+                  <Accordion.Body>
+                    Standard delivery within Pakistan is 4-5 working days (Sat-Sun are not included). Sale items are non-exchangeable.{" "}
+                    <a href="#/policy/shipping" className="text-danger fw-semibold">Read full shipping policy</a>
+                  </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="2">
+                  <Accordion.Header>Care Instructions</Accordion.Header>
+                  <Accordion.Body>
+                    <ul className="mb-0">{CARE.map((c) => <li key={c}>{c}</li>)}</ul>
+                  </Accordion.Body>
+                </Accordion.Item>
+              </Accordion>
+            </div>
           </Col>
         </Row>
 
+        {/* RELATED PRODUCTS */}
         {rel.length > 0 && (
-          <>
-            <h2 className="section-title mt-5">You may also like</h2>
+          <div className="mt-5 pt-4 border-top">
+            <h2 className="section-title">You may also like</h2>
             <Row xs={2} md={4} className="g-3 g-md-4">
               {rel.map((x) => (
                 <ProductCard key={x.id} p={x} s={s} onAdd={(pid) => cart.add(pid)} onBuy={(pid) => cart.buy(pid)} />
               ))}
             </Row>
-          </>
+          </div>
         )}
       </Container>
 
+      {/* STICKY BOTTOM BAR */}
       {bar && available && (
-        <div className="pd-bar">
+        <div className="pd-sticky-bar">
           {cur && <img src={cur} alt="" />}
-          <div className="pd-bar-info">
-            <div className="small fw-semibold">{title}</div>
-            <div className="small">{onSale && <s className="text-muted me-2">{money(s, p.price)}</s>}<b className={onSale ? "text-danger" : ""}>{money(s, eff(p))}</b></div>
+          <div className="pd-sticky-info">
+            <div className="pd-sticky-title">{title}</div>
+            <div className="pd-sticky-price">
+              {onSale && <s>{money(s, p.price)}</s>}
+              <b className={onSale ? "text-danger" : ""}>{money(s, eff(p))}</b>
+            </div>
           </div>
           {Qty}
-          <Button variant="dark" className="pill px-4" onClick={addNow}>Add to cart</Button>
+          <Button variant="dark" className="btn-add-cart" onClick={addNow}>Add to cart</Button>
         </div>
       )}
     </>

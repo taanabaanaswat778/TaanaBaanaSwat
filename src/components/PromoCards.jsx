@@ -1,16 +1,77 @@
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Container, Row, Col } from "react-bootstrap";
 import { eff, inCollection } from "../utils";
+import { PiArrowRight } from "react-icons/pi";
+
+// A sub-component for each individual card so it can have its own slideshow timer
+const PromoCardItem = ({ filter, title, sub, images, onPick }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Auto-change image every 4 seconds if there are multiple images
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [images]);
+
+  // If no images found for this category, show a gradient fallback
+  if (!images || images.length === 0) {
+    return (
+      <div className="promo-card" onClick={() => onPick(filter)}>
+        <div className="promo-overlay" />
+        <div className="promo-content">
+          <h4>{title}</h4>
+          <p>{sub}</p>
+          <span className="promo-btn">Shop Now <PiArrowRight /></span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="promo-card" onClick={() => onPick(filter)}>
+      {/* Background Images */}
+      {images.map((img, i) => (
+        <div
+          key={i}
+          className={"promo-bg " + (i === currentIndex ? "active" : "")}
+          style={{ backgroundImage: `url(${img})` }}
+        />
+      ))}
+      
+      <div className="promo-overlay" />
+      
+      <div className="promo-content">
+        <h4>{title}</h4>
+        <p>{sub}</p>
+        <span className="promo-btn">Shop Now <PiArrowRight /></span>
+      </div>
+      
+      {/* Little dots to show which image is active */}
+      {images.length > 1 && (
+        <div className="promo-dots">
+          {images.map((_, i) => (
+            <span key={i} className={"promo-dot " + (i === currentIndex ? "on" : "")} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function PromoCards({ products = [], onPick }) {
-  // 1. SAFETY CHECK: If products is not an array yet, don't try to filter it.
   if (!Array.isArray(products) || !products.length) {
     return (
       <Container className="py-4">
-        <Row xs={1} md={3} className="g-3">
-          {[1, 2, 3].map((i) => (
+        <Row xs={1} sm={2} lg={4} className="g-3 g-md-4">
+          {[1, 2, 3, 4].map((i) => (
             <Col key={i}>
-              <div className="promo" style={{ background: "#f5f2ec", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div className="spinner-border text-secondary" role="status"></div>
+              <div className="promo-card skeleton">
+                <div className="promo-skeleton-loader"></div>
               </div>
             </Col>
           ))}
@@ -19,53 +80,45 @@ export default function PromoCards({ products = [], onPick }) {
     );
   }
 
-  // 2. Filter products for the Sale card
-  const onSale = products.filter((p) => eff(p) < p.price);
-  const maxOff = onSale.reduce((m, p) => Math.max(m, Math.round(100 - (eff(p) / p.price) * 100)), 0);
+  const getMaxOff = (filter) => {
+    const items = products.filter((p) => inCollection(p, filter) && eff(p) < p.price);
+    return items.reduce((m, p) => Math.max(m, Math.round(100 - (eff(p) / p.price) * 100)), 0);
+  };
 
-  // 3. Filter products for New Arrivals
-  const newArrivals = products.filter((p) => inCollection(p, "New"));
+  const getImages = (filter) => {
+    // Get up to 4 images from products matching this category that actually have an image
+    return products
+      .filter((p) => inCollection(p, filter) && p.img)
+      .slice(0, 4) // Max 4 images per card to keep it fast
+      .map((p) => p.img);
+  };
 
-  // 4. Find the first available category for the third card
-  const cat = [...new Set(products.map((p) => p.cat).filter(Boolean))][0];
-  const catProducts = cat ? products.filter((p) => p.cat === cat) : [];
-
-  // Helper to find the first image ONLY from the specific list provided
-  const imgOf = (list) => (list.find((p) => p.img) || {}).img;
+  const saleOff = getMaxOff("Sale");
+  const newOff = getMaxOff("New");
+  const karandiOff = getMaxOff("Karandi");
+  const fancyOff = getMaxOff("Fancy");
 
   const cards = [
-    { 
-      title: "End of Season Sale", 
-      sub: maxOff ? `Up to ${maxOff}% off on selected suits` : "Grab our best deals", 
-      img: imgOf(onSale), 
-      filter: "Sale" 
-    },
-    { 
-      title: "New Arrivals", 
-      sub: "Latest unstitched collection", 
-      img: imgOf(newArrivals), 
-      filter: "New" 
-    },
-    cat && { 
-      title: `Shop ${cat}`, 
-      sub: `Explore our ${cat} suits`, 
-      img: imgOf(catProducts), 
-      filter: cat 
-    },
-  ].filter(Boolean);
+    { filter: "Sale", title: "End of Season Sale", sub: saleOff ? `Up to ${saleOff}% off` : "Shop our best deals", images: getImages("Sale") },
+    { filter: "New", title: "New Arrivals", sub: newOff ? `Up to ${newOff}% off` : "Fresh designs just landed", images: getImages("New") },
+    { filter: "Karandi", title: "Karandi Collection", sub: karandiOff ? `Up to ${karandiOff}% off` : "Warm, textured suits", images: getImages("Karandi") },
+    { filter: "Fancy", title: "Fancy Collection", sub: fancyOff ? `Up to ${fancyOff}% off` : "Chiffon & organza for events", images: getImages("Fancy") },
+  ].filter((c) => products.some((p) => inCollection(p, c.filter)));
+
+  if (!cards.length) return null;
 
   return (
     <Container className="py-4">
-      <Row xs={1} md={cards.length} className="g-3">
+      <Row xs={1} sm={2} lg={cards.length} className="g-3 g-md-4">
         {cards.map((c) => (
           <Col key={c.title}>
-            <div className="promo" style={c.img ? { backgroundImage: `url(${c.img})` } : {}}>
-              <div className="promo-in">
-                <h4>{c.title}</h4>
-                <p>{c.sub}</p>
-                <Button size="sm" variant="light" className="pill px-3" onClick={() => onPick(c.filter)}>Shop Now</Button>
-              </div>
-            </div>
+            <PromoCardItem 
+              filter={c.filter}
+              title={c.title}
+              sub={c.sub}
+              images={c.images}
+              onPick={onPick}
+            />
           </Col>
         ))}
       </Row>

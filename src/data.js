@@ -142,3 +142,12 @@ export async function logout() {
 
 export const isAdmin = (u) => (DEMO ? !u ? false : (!ADMIN_UID || u.uid === ADMIN_UID) : false);
 export const fmtDate = (v) => (v ? (v.toDate ? v.toDate() : new Date(v)).toLocaleString() : "");
+export const subDiscounts = (cb) => {
+  if (DEMO) return lsub("discounts", cb);
+  return sub((f, a, k) => 
+    f.onSnapshot(f.collection(k.db, "discounts"), 
+      (s) => cb(rows(s)), 
+      (e) => console.error("Could not load discounts", e)
+    )
+  );
+};

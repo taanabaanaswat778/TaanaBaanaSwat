@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Row, Col, Badge, Button, Form, Spinner } from "react-bootstrap";
 import { eff, money, shortDate, inCollection, collectionName, inStock, stockLeft, remainText } from "../utils";
 import { toggleWishlist, useWishlist } from "../wishlist";
 import { DEMO } from "../data";
+import { PiCaretDown, PiSquaresFour, PiList, PiArrowsDownUp } from "react-icons/pi";
 
 export function ProductCard({ p, s, onAdd, onBuy }) {
   const onSale = eff(p) < p.price;
@@ -55,6 +56,47 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
   );
 }
 
+// Custom Dropdown Component for a premium look
+const SortDropdown = ({ sort, setSort }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  
+  useEffect(() => {
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const options = [
+    { value: "rel", label: "Most Relevant" },
+    { value: "low", label: "Price: Low to High" },
+    { value: "high", label: "Price: High to Low" },
+  ];
+
+  const activeLabel = options.find((o) => o.value === sort)?.label || "Sort By";
+
+  return (
+    <div className="custom-sort" ref={ref}>
+      <button className="sort-btn" onClick={() => setOpen(!open)}>
+        <PiArrowsDownUp /> <span>{activeLabel}</span> <PiCaretDown className={open ? "rotated" : ""} />
+      </button>
+      {open && (
+        <div className="sort-menu">
+          {options.map((o) => (
+            <button 
+              key={o.value} 
+              className={"sort-item " + (sort === o.value ? "on" : "")}
+              onClick={() => { setSort(o.value); setOpen(false); }}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function Collection({ products = [], s, filter, search = "", onAdd, onBuy, loading, error }) {
   const [sort, setSort] = useState("rel");
   const [cols, setCols] = useState(4);
@@ -89,10 +131,6 @@ export default function Collection({ products = [], s, filter, search = "", onAd
         <div style={{ fontSize: 44, marginBottom: 16 }}>📶</div>
         <h4 className="mb-3">Could not load products</h4>
         <p className="text-muted">{error.message || "Please check your internet connection and try again."}</p>
-        <div className="text-start bg-light p-3 rounded mb-4 small" style={{ border: "1px solid #ddd" }}>
-          <h6 className="mb-2 text-dark">Debug Info:</h6>
-          <div><b>Mode:</b> {DEMO ? "Demo Mode" : "Live (Firebase Connected)"}</div>
-        </div>
         <Button variant="dark" className="pill px-4 mt-2" onClick={() => window.location.reload()}>
           Retry Connection
         </Button>
@@ -102,17 +140,28 @@ export default function Collection({ products = [], s, filter, search = "", onAd
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center gap-2 mb-3">
-        <small className="text-muted">{q ? `Results for "${search.trim()}"` : label} ({shown.length})</small>
-        <Form.Select size="sm" className="rounded-pill w-auto" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="rel">Most relevant</option>
-          <option value="low">Price: low to high</option>
-          <option value="high">Price: high to low</option>
-        </Form.Select>
-        <div className="btn-group btn-group-sm d-none d-md-inline-flex">
-          {[2, 3, 4].map((n) => (
-            <Button key={n} variant={cols === n ? "dark" : "outline-dark"} onClick={() => setCols(n)}>{n}</Button>
-          ))}
+      {/* Control Bar */}
+      <div className="collection-controls">
+        <div className="cc-left">
+          <h5 className="cc-title">{q ? `Search Results for "${search}"` : label}</h5>
+          <span className="cc-count">{shown.length} Products</span>
+        </div>
+        
+        <div className="cc-right">
+          <SortDropdown sort={sort} setSort={setSort} />
+          
+          <div className="grid-toggle d-none d-lg-flex">
+            {[2, 3, 4].map((n) => (
+              <button 
+                key={n} 
+                className={"grid-btn " + (cols === n ? "on" : "")} 
+                onClick={() => setCols(n)}
+                title={`${n} columns`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -129,15 +178,17 @@ export default function Collection({ products = [], s, filter, search = "", onAd
                 className="pill px-4 py-2" 
                 onClick={() => setVisibleCount((prev) => prev + 16)}
               >
-                See more products
+                Load More Products
               </Button>
             </div>
           )}
         </>
       ) : (
-        <p className="text-center text-muted py-5">
-          {q ? "No suits match your search." : `No products in ${label} right now.`}
-        </p>
+        <div className="text-center py-5">
+          <div style={{ fontSize: 44, marginBottom: 16 }}>🔍</div>
+          <h5>No products found</h5>
+          <p className="text-muted">{q ? "Try searching for a different keyword." : `We haven't added any products to ${label} yet.`}</p>
+        </div>
       )}
     </>
   );
