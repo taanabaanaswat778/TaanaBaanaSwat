@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "tana-bana-swat"
+  },
+  "targets": {
+    "tana-bana-swat": {
+      "hosting": {
+        "admin": [
+          "taana-baana-admin"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
