@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Row, Col, Badge, Button, Form, Spinner } from "react-bootstrap";
 import { eff, money, shortDate, inCollection, collectionName, inStock, stockLeft, remainText } from "../utils";
 import { toggleWishlist, useWishlist } from "../wishlist";
-import { DEMO } from "../data";
-import { PiCaretDown, PiSquaresFour, PiList, PiArrowsDownUp } from "react-icons/pi";
+import { PiCaretDown, PiArrowsDownUp, PiHeart, PiHeartFill } from "react-icons/pi";
 
 export function ProductCard({ p, s, onAdd, onBuy }) {
   const onSale = eff(p) < p.price;
@@ -14,49 +13,66 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
 
   return (
     <Col className="text-center">
-      <div className="product-card position-relative">
+      <div className="product-card h-100">
         <div className="product-img-wrap position-relative overflow-hidden">
           <a href={href} className="card-link">
-            {p.img ? <img src={p.img} alt={p.name} className="product-img w-100" /> : <div className="product-ph">👗</div>}
+            {p.img ? (
+              <img src={p.img} alt={p.name} className="product-img w-100" />
+            ) : (
+              <div className="product-ph">👗</div>
+            )}
           </a>
+          
           {onSale && <Badge bg="danger" className="sale-badge">SALE -{Math.round(100 - (eff(p) / p.price) * 100)}%</Badge>}
           {!onSale && p.isNew && <Badge bg="dark" className="sale-badge">NEW</Badge>}
+          
           <button
             type="button"
             className={"wish" + (liked ? " on" : "")}
             onClick={() => toggleWishlist(p.id)}
             aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
-            title="Wishlist"
-          >{liked ? "♥" : "♡"}</button>
+          >
+            {liked ? <PiHeartFill /> : <PiHeart />}
+          </button>
         </div>
 
-        <a href={href} className="card-link">
-          <div className="small fw-semibold mt-2 product-title">
-            {p.pieces ? `${p.pieces} - ` : ""}{p.name || "Product"}{p.pieces ? " (Unstitched)" : ""}
-          </div>
-        </a>
-        <div className="mb-1 small">
-          <span className={onSale ? "text-danger fw-bold" : "text-muted"}>{money(s, eff(p))}</span>
-          {onSale && <span className="text-muted text-decoration-line-through ms-2">{money(s, p.price)}</span>}
-          {onSale && p.saleEnd && <div className="text-danger" style={{ fontSize: 12 }}>Sale ends {shortDate(p.saleEnd)}</div>}
-        </div>
-
-        {remain && <div className={"remain" + (left <= 3 ? " low" : "")}>{remain}</div>}
-
-        <div className="product-actions mt-2">
-          {inStock(p) ? (
-            <div className="d-flex gap-1 justify-content-center flex-wrap">
-              <Button size="sm" variant="dark" className="pill px-3 btn-add-cart" onClick={() => onAdd(p.id)}>Add to cart</Button>
-              <Button size="sm" variant="outline-dark" className="pill px-3" onClick={() => onBuy(p.id)}>Buy now</Button>
+        <div className="product-info">
+          <a href={href} className="card-link">
+            <div className="product-title">
+              {p.pieces ? `${p.pieces} - ` : ""}{p.name}{p.pieces ? " (Unstitched)" : ""}
             </div>
-          ) : <span className="text-muted small">Out of stock</span>}
+          </a>
+          
+          <div className="product-price-wrap">
+            <span className={onSale ? "price-sale" : "price-normal"}>{money(s, eff(p))}</span>
+            {onSale && <span className="price-old">{money(s, p.price)}</span>}
+          </div>
+          
+          {remain ? (
+            <div className={"product-stock" + (left <= 3 ? " low" : "")}>
+              {remain}
+            </div>
+          ) : (
+             <div className="product-stock" style={{ opacity: 0 }}>In Stock</div>
+          )}
+
+          <div className="product-actions">
+            {inStock(p) ? (
+              <>
+                <Button size="sm" variant="dark" className="btn-add-cart" onClick={() => onAdd(p.id)}>Add to cart</Button>
+                <Button size="sm" variant="outline-dark" className="btn-buy-now" onClick={() => onBuy(p.id)}>Buy now</Button>
+              </>
+            ) : (
+              <Button size="sm" variant="secondary" disabled className="btn-out-stock">Out of stock</Button>
+            )}
+          </div>
         </div>
       </div>
     </Col>
   );
 }
 
-// Custom Dropdown Component for a premium look
+// Custom Dropdown Component
 const SortDropdown = ({ sort, setSort }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -140,7 +156,6 @@ export default function Collection({ products = [], s, filter, search = "", onAd
 
   return (
     <>
-      {/* Control Bar */}
       <div className="collection-controls">
         <div className="cc-left">
           <h5 className="cc-title">{q ? `Search Results for "${search}"` : label}</h5>
@@ -149,15 +164,9 @@ export default function Collection({ products = [], s, filter, search = "", onAd
         
         <div className="cc-right">
           <SortDropdown sort={sort} setSort={setSort} />
-          
           <div className="grid-toggle d-none d-lg-flex">
             {[2, 3, 4].map((n) => (
-              <button 
-                key={n} 
-                className={"grid-btn " + (cols === n ? "on" : "")} 
-                onClick={() => setCols(n)}
-                title={`${n} columns`}
-              >
+              <button key={n} className={"grid-btn " + (cols === n ? "on" : "")} onClick={() => setCols(n)}>
                 {n}
               </button>
             ))}
@@ -173,11 +182,7 @@ export default function Collection({ products = [], s, filter, search = "", onAd
           
           {visibleCount < shown.length && (
             <div className="text-center mt-5 mb-4">
-              <Button 
-                variant="outline-dark" 
-                className="pill px-4 py-2" 
-                onClick={() => setVisibleCount((prev) => prev + 16)}
-              >
+              <Button variant="outline-dark" className="pill px-4 py-2" onClick={() => setVisibleCount((prev) => prev + 16)}>
                 Load More Products
               </Button>
             </div>
