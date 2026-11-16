@@ -1,19 +1,65 @@
+import { useState } from "react";
 import { updateOrder, deleteOrder } from "../db";
 import { money, fmtDate } from "../utils";
-import { PiTrash, PiWhatsappLogo, PiPhone, PiMapPin, PiCube, PiCreditCard } from "react-icons/pi";
+import { PiTrash, PiWhatsappLogo, PiPhone, PiMapPin, PiCube, PiCreditCard, PiListChecks } from "react-icons/pi";
 
 const intl = (ph = "") => { const d = ph.replace(/\D/g, ""); return d.startsWith("0") ? "92" + d.slice(1) : d; };
 
+const TABS = [
+  { key: "new", label: "New Orders", color: "#fff0cf", textColor: "#8a5a00" },
+  { key: "confirmed", label: "Confirmed", color: "#dbeafe", textColor: "#1d4ed8" },
+  { key: "shipped", label: "Shipped", color: "#e0e7ff", textColor: "#4338ca" },
+  { key: "delivered", label: "Delivered", color: "#e7f6ec", textColor: "#17653a" },
+  { key: "cancelled", label: "Cancelled", color: "#fde8e8", textColor: "#9b1c1c" },
+  { key: "all", label: "All Orders", color: "#f1ede6", textColor: "#1c1917" },
+];
+
 export default function Orders({ orders }) {
+  const [activeTab, setActiveTab] = useState("new");
+
+  // Filter orders based on the selected tab
+  const filteredOrders = activeTab === "all" 
+    ? orders 
+    : orders.filter((o) => o.status === activeTab);
+
+  const getTabCount = (key) => {
+    if (key === "all") return orders.length;
+    return orders.filter((o) => o.status === key).length;
+  };
+
   return (
     <div className="card">
+      
+      {/* HEADER */}
       <div className="card-h" style={{ borderBottom: "1px solid #eee", paddingBottom: 16, marginBottom: 16 }}>
         <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 18 }}>
-          <PiCube size={22} color="var(--ac)" /> Recent Orders
+          <PiCube size={22} color="var(--ac)" /> Orders Management
         </h3>
       </div>
 
-      <div className="table-wrap">
+      {/* TABS */}
+      <div className="order-tabs">
+        {TABS.map((tab) => {
+          const count = getTabCount(tab.key);
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={"order-tab " + (isActive ? "active" : "")}
+              style={isActive ? { background: tab.color, color: tab.textColor, borderColor: tab.textColor } : {}}
+            >
+              {tab.label}
+              <span className="tab-count" style={isActive ? { background: tab.textColor, color: "#fff" } : {}}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* TABLE */}
+      <div className="table-wrap mt-3">
         <table className="orders-table">
           <thead>
             <tr>
@@ -25,7 +71,7 @@ export default function Orders({ orders }) {
             </tr>
           </thead>
           <tbody>
-            {orders.map((o) => (
+            {filteredOrders.map((o) => (
               <tr key={o.id}>
                 <td>
                   <div className="order-id">#{o.orderNo || "—"}</div>
@@ -95,11 +141,13 @@ export default function Orders({ orders }) {
                 </td>
               </tr>
             ))}
-            {!orders.length && (
+            
+            {!filteredOrders.length && (
               <tr>
-                <td colSpan={5} className="empty" style={{ padding: "40px", textAlign: "center", color: "var(--mut)" }}>
-                  <PiCube size={48} style={{ opacity: 0.2, marginBottom: 10 }} />
-                  <br />No orders yet.
+                <td colSpan={5} className="empty" style={{ padding: "60px", textAlign: "center", color: "var(--mut)" }}>
+                  <PiListChecks size={48} style={{ opacity: 0.2, marginBottom: 16 }} />
+                  <h5>No {activeTab === "all" ? "" : activeTab} orders found</h5>
+                  <p className="small">When customers place orders, they will appear here.</p>
                 </td>
               </tr>
             )}

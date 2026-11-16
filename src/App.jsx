@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, onSnapshot } from "firebase/firestore"; // Added for discounts
+import { collection, onSnapshot } from "firebase/firestore";
 import { db, LOCAL, LOCAL_REASON, auth, ADMIN_UID, STORE_URL } from "./firebase";
 import { subProducts, subOrders, resetLocal } from "./db";
 import Login from "./pages/Login";
@@ -10,15 +10,17 @@ import Prices from "./pages/Prices";
 import Orders from "./pages/Orders";
 import Stock from "./pages/Stock";
 import Customers from "./pages/Customers";
-import Discounts from "./pages/Discounts"; // New Import
+import Discounts from "./pages/Discounts";
+import Payments from "./pages/Payments"; // <-- New Import
 import SearchBox from "./components/SearchBox";
-import { PiSquaresFour, PiTShirt, PiTag, PiDownloadSimple, PiPackage, PiUsers, PiGlobe, PiSignOut, PiTicket } from "react-icons/pi";
+import { PiSquaresFour, PiTShirt, PiTag, PiDownloadSimple, PiPackage, PiUsers, PiGlobe, PiSignOut, PiTicket, PiBank } from "react-icons/pi";
 
 const NAV = [
   ["dashboard", "Dashboard", <PiSquaresFour />],
   ["products", "Products", <PiTShirt />],
   ["prices", "Category Prices", <PiTag />],
-  ["discounts", "Discount Codes", <PiTicket />], // New Nav Item
+  ["discounts", "Discount Codes", <PiTicket />],
+  ["payments", "Payment Accounts", <PiBank />], // <-- New Nav Item
   ["stock", "Import Stock", <PiDownloadSimple />],
   ["orders", "Orders", <PiPackage />],
   ["customers", "Customers", <PiUsers />],
@@ -29,7 +31,7 @@ export default function App() {
   const [user, setUser] = useState(LOCAL ? { uid: "local", email: "local mode" } : undefined);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [discounts, setDiscounts] = useState([]); // New State
+  const [discounts, setDiscounts] = useState([]);
   const [page, setPage] = useState(readPage());
   const [nav, setNav] = useState(false);
   const [readErr, setReadErr] = useState("");
@@ -58,7 +60,6 @@ export default function App() {
     const a = subProducts(setProducts, fail("products"));
     const b = subOrders(setOrders, fail("orders"));
     
-    // Fetch discounts
     let c = () => {};
     if (!LOCAL) {
       c = onSnapshot(collection(db, "discounts"), (snapshot) => {
@@ -77,7 +78,8 @@ export default function App() {
   const view =
     page === "products" ? <Products products={products} openId={editId} onOpened={() => setEditId(null)} />
     : page === "prices" ? <Prices products={products} />
-    : page === "discounts" ? <Discounts discounts={discounts} /> // New Route
+    : page === "discounts" ? <Discounts discounts={discounts} />
+    : page === "payments" ? <Payments /> // <-- New Route
     : page === "stock" ? <Stock products={products} />
     : page === "orders" ? <Orders orders={orders} />
     : page === "customers" ? <Customers orders={orders} />
@@ -86,7 +88,15 @@ export default function App() {
   return (
     <div className="shell">
       <aside className={"side" + (nav ? " open" : "")}>
-        <div className="brand">Taana Baana<small>Admin</small></div>
+        <div style={{ padding: "4px 10px 24px" }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: 600, fontSize: "1.8rem", letterSpacing: "-0.5px", background: "linear-gradient(135deg, #fff, #d4af37)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1, marginBottom: 4 }}>
+            Taana Baana
+          </div>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.4em", color: "#8a7a6b", textTransform: "uppercase", paddingLeft: "0.4em" }}>
+            Swat
+          </div>
+        </div>
+
         <nav>
           {NAV.map(([k, label, ic]) => (
             <a key={k} href={"#/" + k} className={page === k ? "on" : ""}>
