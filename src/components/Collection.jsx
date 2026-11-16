@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Row, Col, Badge, Button, Form, Spinner } from "react-bootstrap";
 import { eff, money, shortDate, inCollection, collectionName, inStock, stockLeft, remainText } from "../utils";
 import { toggleWishlist, useWishlist } from "../wishlist";
