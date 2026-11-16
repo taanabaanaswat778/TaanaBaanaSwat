@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import logo from "../assets/logo.png";
 import { useWishlist } from "../wishlist";
+import BrandLogo from "./BrandLogo"; // <-- Imported
 
-// ===== EDIT THESE MESSAGES =====
 const MESSAGES = [
   "Cash on delivery available",
   "Order easily on WhatsApp",
   "New unstitched arrivals every week",
 ];
-// ===============================
 
 const svg = (children) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
@@ -52,7 +50,12 @@ export default function Header({ s, count, onMenu, onCart, search, setSearch, li
         <button className="hdr-btn hdr-menu" onClick={onMenu} aria-label="Open menu">
           {Icon.menu}<span className="d-none d-md-inline">Menu</span>
         </button>
-        <a href="#/" className="hdr-logo"><img src={logo} alt={s.name} /></a>
+        
+        {/* NEW BRAND LOGO */}
+        <a href="#/" className="hdr-logo" style={{ textDecoration: "none", display: "flex", justifyContent: "center", padding: "0 20px" }}>
+          <BrandLogo color="#111" subColor="#8a2c2c" size="2.2rem" />
+        </a>
+
         <div className="hdr-actions">
           {!hideSearch && (
             <button className="hdr-btn" onClick={toggleSearch} aria-label="Search">{box ? Icon.close : Icon.search}</button>

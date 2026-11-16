@@ -1,25 +1,17 @@
 import { useState } from "react";
 import { Offcanvas } from "react-bootstrap";
 import { eff, money, SHIPPING } from "../utils";
+import { PiTrash, PiShoppingCart, PiTruck } from "react-icons/pi";
 
-const Trash = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
-  </svg>
-);
 const nameOf = (p) => `${p.pieces ? p.pieces + " - " : ""}${p.name}${p.pieces ? " (Unstitched)" : ""}`;
 
-// Added products = [] to prevent crash
 export default function Cart({ show, onHide, items, products = [], s, qty, remove, add }) {
   const [k, setK] = useState(0);
   
-  // SAFETY CHECK: Ensure products is an array before filtering
   const safeProducts = Array.isArray(products) ? products : [];
-
   const subtotal = items.reduce((a, { p, q }) => a + eff(p) * q, 0);
   const inCart = new Set(items.map(({ p }) => p.id));
   
-  // Use safeProducts here
   const rel = safeProducts.filter((p) => !inCart.has(p.id) && p.stock).slice(0, 5);
   const cur = rel.length ? rel[k % rel.length] : null;
   
@@ -29,43 +21,61 @@ export default function Cart({ show, onHide, items, products = [], s, qty, remov
 
   return (
     <Offcanvas show={show} onHide={onHide} placement="end" className="ct">
-      <Offcanvas.Header closeButton>
-        <Offcanvas.Title className="ct-title">Shopping cart</Offcanvas.Title>
+      <Offcanvas.Header closeButton className="ct-header">
+        <Offcanvas.Title className="ct-title">
+          <PiShoppingCart size={20} /> Shopping Cart
+        </Offcanvas.Title>
       </Offcanvas.Header>
+      
       <Offcanvas.Body className="ct-body">
         {!items.length ? (
-          <div className="text-center py-5 px-3">
-            <div style={{ fontSize: 44 }}>🛍️</div>
-            <p className="text-muted my-3">Your cart is empty.</p>
-            <button className="ct-go" onClick={onHide}>Continue shopping</button>
+          <div className="ct-empty">
+            <div className="ct-empty-icon"><PiShoppingCart /></div>
+            <h4>Your cart is empty</h4>
+            <p>Looks like you haven't added anything yet.</p>
+            <button className="ct-btn-primary" onClick={onHide}>Start Shopping</button>
           </div>
         ) : (
           <>
             <div className="ct-scroll">
-              <div className="ct-ship">
-                {left > 0 ? <>Add <b>{money(s, left)}</b> more for <b>free shipping</b></> : <>🎉 You've got <b>free shipping</b></>}
+              
+              {/* Free Shipping Bar */}
+              <div className="ct-ship-box">
+                <div className="ct-ship-text">
+                  <PiTruck size={18} /> 
+                  {left > 0 
+                    ? <span>Add <b>{money(s, left)}</b> more for <b>free shipping</b></span> 
+                    : <span>🎉 You've unlocked <b>free shipping</b>!</span>}
+                </div>
                 <div className="ct-bar"><i style={{ width: pct + "%" }} /></div>
               </div>
 
-              {items.map(({ p, q }) => (
-                <div key={p.id} className="ct-item">
-                  {p.img ? <img src={p.img} alt="" className="ct-img" /> : <div className="ct-img" />}
-                  <div className="flex-grow-1 min-w-0">
-                    <div className="ct-name">{nameOf(p)}</div>
-                    <div className="ct-price">{money(s, eff(p))}</div>
-                    <div className="ct-qty">
-                      {q === 1 ? (
-                        <button onClick={() => remove(p.id)} aria-label="Remove"><Trash /></button>
-                      ) : (
-                        <button onClick={() => qty(p.id, -1)} aria-label="Decrease">−</button>
-                      )}
-                      <span>{q}</span>
-                      <button onClick={() => qty(p.id, 1)} aria-label="Increase">+</button>
+              {/* Cart Items */}
+              <div className="ct-items">
+                {items.map(({ p, q }) => (
+                  <div key={p.id} className="ct-item">
+                    <a href={`#/product/${p.id}`} onClick={onHide} className="ct-img-link">
+                      {p.img ? <img src={p.img} alt="" className="ct-img" /> : <div className="ct-img" />}
+                    </a>
+                    <div className="ct-item-info">
+                      <a href={`#/product/${p.id}`} onClick={onHide} className="ct-name">{nameOf(p)}</a>
+                      <div className="ct-price">{money(s, eff(p))}</div>
+                      
+                      <div className="ct-qty">
+                        {q === 1 ? (
+                          <button onClick={() => remove(p.id)} aria-label="Remove" className="ct-trash"><PiTrash size={16} /></button>
+                        ) : (
+                          <button onClick={() => qty(p.id, -1)} aria-label="Decrease">−</button>
+                        )}
+                        <span>{q}</span>
+                        <button onClick={() => qty(p.id, 1)} aria-label="Increase">+</button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
+              {/* You May Also Like */}
               {cur && (
                 <div className="ct-rel">
                   <h6>You may also like</h6>
@@ -80,7 +90,9 @@ export default function Cart({ show, onHide, items, products = [], s, qty, remov
                     </a>
                     <button className="ct-nav" onClick={() => setK((k + 1) % rel.length)} aria-label="Next">›</button>
                   </div>
-                  <button className="ct-add" onClick={() => add(cur.id)}>+ Add to cart</button>
+                  
+                  <button className="ct-add-btn" onClick={() => add(cur.id)}>+ Add to Cart</button>
+                  
                   <div className="ct-dots">
                     {rel.map((r, i) => <i key={r.id} className={i === k % rel.length ? "on" : ""} />)}
                   </div>
@@ -88,11 +100,20 @@ export default function Cart({ show, onHide, items, products = [], s, qty, remov
               )}
             </div>
 
+            {/* Footer / Checkout */}
             <div className="ct-foot">
-              <div className="ct-sub"><span>Subtotal:</span><span>{money(s, subtotal)}</span></div>
-              <div className="small text-muted mb-2">Shipping and discounts are calculated at checkout.</div>
-              <button className="ct-view" onClick={onHide}>Continue shopping</button>
-              <button className="ct-go" onClick={checkout}>Check out</button>
+              <div className="ct-sub">
+                <span>Subtotal</span>
+                <span>{money(s, subtotal)}</span>
+              </div>
+              <div className="ct-note">Shipping and discounts are calculated at checkout.</div>
+              
+              <button className="ct-btn-primary" onClick={checkout}>
+                Check Out
+              </button>
+              <button className="ct-btn-ghost" onClick={onHide}>
+                Continue Shopping
+              </button>
             </div>
           </>
         )}

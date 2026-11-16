@@ -1,6 +1,10 @@
 import { Container, Row, Col } from "react-bootstrap";
 import SocialLinks from "./SocialLinks";
-import TaanaBaanaText from "./TaanaBaanaText";
+import BrandLogo from "./BrandLogo"; // <-- Using BrandLogo
+import { 
+  PiMapPin, PiPhone, PiEnvelopeSimple, PiClock, 
+  PiTruck, PiHeadphones, PiShieldCheck
+} from "react-icons/pi";
 
 // ===== EDIT THESE =====
 const INFO = {
@@ -16,7 +20,7 @@ const INFO = {
     whatsapp: "",
   },
   payments: ["Cash on Delivery", "Easypaisa", "Bank Transfer"],
-  couriers: ["leopard"],
+  couriers: ["Leopard Courier"],
 };
 // ======================
 
@@ -42,57 +46,59 @@ export default function Footer({ s }) {
   const help = [
     ["Track Your Order", "#/track"],
     ["Shipping Policy", "#/policy/shipping"],
-    ["Order Cancellation", "#"],
+    ["Order Cancellation", "#/policy/cancellation"],
     ["Contact on WhatsApp", contactWa],
   ];
-  const about = [["Privacy Policy", "#"], ["Terms & Conditions", "#"], ["Return & Exchange", "#"], ["About us", "#"]];
+  
+  const about = [
+    ["Privacy Policy", "#/policy/privacy"],
+    ["Terms & Conditions", "#/policy/terms"],
+    ["Return & Exchange", "#/policy/returns"],
+    ["About us", "#/policy/about"]
+  ];
 
   return (
-    <footer className="site-footer mt-5">
-      <div className="footer-strip">
+    <footer className="footer-luxe mt-5">
+      <div className="footer-features">
         <Container>
-          <Row className="g-3 text-center text-md-start">
-            <Col md={4}><b>🚚 SHIPPING</b><div className="small text-muted">Free shipping nationwide above {s.cur}{INFO.freeShippingAbove.toLocaleString()}</div></Col>
-            <Col md={4}><b>🎧 CUSTOMER SUPPORT</b><div className="small text-muted">Contact us 10:00 AM - 9:30 PM</div></Col>
-            <Col md={4}><b>🛡 EASY ORDERING</b><div className="small text-muted">Cash on delivery available</div></Col>
+          <Row className="g-4 text-center text-md-start">
+            <Col md={4} className="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+              <div className="ff-icon"><PiTruck /></div>
+              <div>
+                <b>Free Shipping</b>
+                <div className="small text-white-50">On orders above {s.cur}{INFO.freeShippingAbove.toLocaleString()}</div>
+              </div>
+            </Col>
+            <Col md={4} className="d-flex align-items-center justify-content-center justify-content-md-start gap-3 border-md-x">
+              <div className="ff-icon"><PiHeadphones /></div>
+              <div>
+                <b>Customer Support</b>
+                <div className="small text-white-50">Available 10:00 AM - 9:30 PM</div>
+              </div>
+            </Col>
+            <Col md={4} className="d-flex align-items-center justify-content-center justify-content-md-start gap-3 border-md-x">
+              <div className="ff-icon"><PiShieldCheck /></div>
+              <div>
+                <b>Easy Ordering</b>
+                <div className="small text-white-50">Cash on Delivery available</div>
+              </div>
+            </Col>
           </Row>
         </Container>
       </div>
 
-      <Container className="py-4">
-        <Row className="g-4">
-          <Col md={6} lg={4}>
-            <h6 className="fw-bold">Contact Us</h6>
-            <ul className="footer-list">
-              <li><a href={mapUrl} target="_blank" rel="noreferrer" title="Open in Google Maps">📍 {INFO.address}</a></li>
-              <li><a href={callUrl} title="Call us">📞 {INFO.phone}</a></li>
-              <li><a href={emailUrl} target={isMobile ? undefined : "_blank"} rel="noreferrer" title="Send us an email">✉️ {INFO.email}</a></li>
-              <li>🕘 {INFO.hours}</li>
-            </ul>
-            <iframe title="Store location" className="footer-map" loading="lazy" src={embedUrl} />
-          </Col>
-
-          <Col xs={6} md={3} lg={2}>
-            <h6 className="fw-bold">Need help</h6>
-            <ul className="footer-list">
-              {help.map(([t, h]) => (
-                <li key={t}>
-                  <a href={h} target={h.startsWith("http") ? "_blank" : undefined} rel="noreferrer">{t}</a>
-                </li>
-              ))}
-            </ul>
-          </Col>
-
-          <Col xs={6} md={3} lg={2}>
-            <h6 className="fw-bold">Information</h6>
-            <ul className="footer-list">
-              {about.map(([t, h]) => <li key={t}><a href={h}>{t}</a></li>)}
-            </ul>
-          </Col>
-
-          <Col lg={4}>
-            <h6 className="fw-bold">Follow Us</h6>
-            <div className="mb-3">
+      <Container className="py-5">
+        <Row className="g-5">
+          
+          <Col lg={4} md={6}>
+            {/* NEW BRAND LOGO */}
+            <div className="mb-4">
+              <BrandLogo color="#fff" subColor="#d4af37" size="2.4rem" />
+            </div>
+            <p className="footer-desc">
+              Discover the finest unstitched clothing at TaanaBaana. We bring you premium fabrics with traditional embroidery and modern digital prints.
+            </p>
+            <div className="mt-4">
               <SocialLinks
                 links={{
                   instagram: INFO.social.instagram,
@@ -101,28 +107,52 @@ export default function Footer({ s }) {
                 }}
               />
             </div>
-            <TaanaBaanaText style={{ fontSize: "2rem", marginTop: "10px" }} />
+          </Col>
+
+          <Col lg={2} md={6} xs={6}>
+            <h6 className="footer-title">Need Help</h6>
+            <ul className="footer-links">
+              {help.map(([t, h]) => (
+                <li key={t}>
+                  <a href={h} target={h.startsWith("http") ? "_blank" : undefined} rel="noreferrer">{t}</a>
+                </li>
+              ))}
+            </ul>
+          </Col>
+
+          <Col lg={2} md={6} xs={6}>
+            <h6 className="footer-title">Information</h6>
+            <ul className="footer-links">
+              {about.map(([t, h]) => <li key={t}><a href={h}>{t}</a></li>)}
+            </ul>
+          </Col>
+
+          <Col lg={4} md={6}>
+            <h6 className="footer-title">Contact Us</h6>
+            <ul className="footer-contact">
+              <li><PiMapPin /> <span>{INFO.address}</span></li>
+              <li><PiPhone /> <a href={callUrl}>{INFO.phone}</a></li>
+              <li><PiEnvelopeSimple /> <a href={emailUrl}>{INFO.email}</a></li>
+              <li><PiClock /> <span>{INFO.hours}</span></li>
+            </ul>
           </Col>
         </Row>
-
-        <hr className="my-4" />
-        <Row className="g-4">
-          <Col md={6} className="text-center">
-            <div className="fw-semibold mb-2">Accepted Payments</div>
-            <div className="d-flex gap-2 justify-content-center flex-wrap">
-              {INFO.payments.map((p) => <span key={p} className="chip">{p}</span>)}
-            </div>
-          </Col>
-          <Col md={6} className="text-center border-md-start">
-            <div className="fw-semibold mb-2">Official Delivery Partner</div>
-            <div className="d-flex gap-2 justify-content-center flex-wrap">
-              {INFO.couriers.map((c) => <span key={c} className="chip fw-bold">{c}</span>)}
-            </div>
-          </Col>
-        </Row>
-
-        <div className="text-center text-muted small mt-4">© {new Date().getFullYear()} {s.name}. All rights reserved.</div>
       </Container>
+
+      <div className="footer-bottom">
+        <Container>
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div className="d-flex align-items-center gap-2">
+              <span className="small text-white-50 me-2">We Accept:</span>
+              {INFO.payments.map((p) => <span key={p} className="pay-chip">{p}</span>)}
+            </div>
+            
+            <div className="small text-white-50">
+              © {new Date().getFullYear()} Taana Baana. All rights reserved.
+            </div>
+          </div>
+        </Container>
+      </div>
     </footer>
   );
 }

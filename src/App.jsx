@@ -24,7 +24,6 @@ export default function App() {
   
   useEffect(() => { document.title = s.name; }, [s.name]);
 
-  // A safety wrapper to ensure data is always an array
   const safeProducts = Array.isArray(products) ? products : [];
 
   let page;

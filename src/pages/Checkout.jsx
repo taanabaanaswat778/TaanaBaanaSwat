@@ -1,26 +1,17 @@
 import { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { addOrder, subDiscounts } from "../data";
+import { addOrder, subDiscounts, getPaymentSettings } from "../data";
 import { useCart } from "../hooks";
 import { eff, money, shippingFor } from "../utils";
 import { BackHome } from "../components/Breadcrumb";
 import Footer from "../components/Footer";
-import logo from "../assets/logo.png";
+import BrandLogo from "../components/BrandLogo";
 import { 
   PiTruck, PiCreditCard, PiBank, PiCheckCircle, PiTag, 
   PiLockKey, PiUser, PiMapPin, PiPhone, PiShoppingBag
 } from "react-icons/pi";
 
 const FALLBACK_WA = "923091812140";
-const PAYMENTS = [
-  { id: "cod", label: "Cash on Delivery", icon: <PiTruck />, note: "Pay in cash when your order arrives." },
-  {
-    id: "manual",
-    label: "Bank Transfer / JazzCash / Easypaisa",
-    icon: <PiBank />,
-    note: "Send the payment to the account below, then send the screenshot to us on WhatsApp.\n\nAccount title: Taana Baana\nJazzCash / Easypaisa: 0309-1812140\nBank: Meezan Bank\nAccount: 0000-0000000000",
-  },
-];
 
 const nameOf = (p) => `${p.pieces ? p.pieces + " - " : ""}${p.name}${p.pieces ? " (Unstitched)" : ""}`;
 
@@ -32,6 +23,7 @@ export default function Checkout({ products, s }) {
   
   const [code, setCode] = useState("");
   const [activeDiscounts, setActiveDiscounts] = useState([]);
+  const [bankAccounts, setBankAccounts] = useState([]);
   const [applied, setApplied] = useState(null);
   const [codeMsg, setCodeMsg] = useState("");
   
@@ -41,6 +33,9 @@ export default function Checkout({ products, s }) {
 
   useEffect(() => {
     const unsub = subDiscounts(setActiveDiscounts);
+    getPaymentSettings().then((data) => {
+      if (data && data.accounts) setBankAccounts(data.accounts);
+    });
     return () => unsub();
   }, []);
 
@@ -62,44 +57,27 @@ export default function Checkout({ products, s }) {
   const total = subtotal - discount + ship;
   
   const wa = (s.wa || FALLBACK_WA).replace(/\D/g, "");
+
+  const PAYMENTS = [
+    { id: "cod", label: "Cash on Delivery", icon: <PiTruck />, note: "Pay in cash when your order arrives." },
+    { id: "manual", label: "Bank Transfer / JazzCash / Easypaisa", icon: <PiBank />, isManual: true },
+  ];
+
   const payLabel = (PAYMENTS.find((m) => m.id === pay) || PAYMENTS[0]).label;
 
-  // ====== DISCOUNT LOGIC WITH START & END DATES ======
   const apply = () => {
     const c = code.trim().toUpperCase();
     const found = activeDiscounts.find((d) => d.code === c);
     const today = new Date().toLocaleDateString("en-CA");
 
-    if (!found) {
-      setApplied(null);
-      return setCodeMsg("Invalid discount code.");
-    }
+    if (!found) { setApplied(null); return setCodeMsg("Invalid discount code."); }
+    if (found.startDate && found.startDate > today) { setApplied(null); return setCodeMsg(`This code is scheduled to start on ${found.startDate}.`); }
+    if (found.endDate && found.endDate < today) { setApplied(null); return setCodeMsg("This discount code has expired."); }
+    if (found.minOrder > 0 && subtotal < found.minOrder) { setApplied(null); return setCodeMsg(`This code requires a minimum order of ${money(s, found.minOrder)}.`); }
 
-    // Check Start Date
-    if (found.startDate && found.startDate > today) {
-      setApplied(null);
-      return setCodeMsg(`This code is scheduled to start on ${found.startDate}.`);
-    }
-
-    // Check End Date
-    if (found.endDate && found.endDate < today) {
-      setApplied(null);
-      return setCodeMsg("This discount code has expired.");
-    }
-
-    // Check Minimum Order
-    if (found.minOrder > 0 && subtotal < found.minOrder) {
-      setApplied(null);
-      return setCodeMsg(`This code requires a minimum order of ${money(s, found.minOrder)}.`);
-    }
-
-    // Calculate Discount
     let discountAmt = 0;
-    if (found.type === "percent") {
-      discountAmt = Math.round((subtotal * found.value) / 100);
-    } else {
-      discountAmt = found.value;
-    }
+    if (found.type === "percent") discountAmt = Math.round((subtotal * found.value) / 100);
+    else discountAmt = found.value;
     discountAmt = Math.min(discountAmt, subtotal);
 
     setApplied({ code: found.code, amount: discountAmt });
@@ -158,7 +136,9 @@ export default function Checkout({ products, s }) {
     <>
       <header className="track-top">
         <BackHome label="Continue shopping" />
-        <a href="#/"><img src={logo} alt={s.name} className="track-logo" /></a>
+        <a href="#/" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+          <BrandLogo color="#111" subColor="#8a2c2c" size="1.8rem" />
+        </a>
         <span />
       </header>
       {body}
@@ -166,32 +146,66 @@ export default function Checkout({ products, s }) {
     </>
   );
 
-  // ----- Order placed -----
   if (done) {
     const m = PAYMENTS.find((x) => x.label === done.payment);
     return shell(
-      <Container className="co-done py-5">
-        <div className="co-check"><PiCheckCircle /></div>
-        <h2>Thank you, {done.customer.first || "friend"}!</h2>
-        <p className="text-muted mb-4">Your order <b>#{done.orderNo}</b> has been placed successfully. We will contact you on {done.customer.phone} to confirm it.</p>
-        
-        <div className="co-done-summary">
-          {done.items.map((l) => (
-            <div key={l.id} className="co-row"><span>{l.name} × {l.qty}</span><span>{money(s, l.price * l.qty)}</span></div>
-          ))}
-          <hr />
-          {done.discount > 0 && <div className="co-row text-success"><span>Discount ({done.discountCode})</span><span>-{money(s, done.discount)}</span></div>}
-          <div className="co-row"><span>Shipping</span><span>{done.shipping ? money(s, done.shipping) : "FREE"}</span></div>
-          <div className="co-row co-total"><span>Total</span><span>{money(s, done.total)}</span></div>
-          <div className="small text-muted mt-3">Payment Method: {done.payment}</div>
-          {m && m.id === "manual" && <div className="co-pay-note mt-2">{m.note}</div>}
-        </div>
+      <Container className="co-success-wrap py-5">
+        <div className="co-success-card">
+          <div className="co-success-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
 
-        <div className="d-flex gap-3 justify-content-center flex-wrap mt-4">
-          <a className="co-wa" href={`https://wa.me/${wa}?text=${encodeURIComponent(waText(done))}`} target="_blank" rel="noreferrer">
-            Send order details on WhatsApp
-          </a>
-          <a className="back-home" href="#/"><span>Continue shopping</span></a>
+          <h1 className="co-success-title">Thank you, {done.customer.first || "friend"}!</h1>
+          <p className="co-success-subtitle">
+            Your order <b>#{done.orderNo}</b> has been placed successfully.<br />
+            We will contact you on <b>{done.customer.phone}</b> to confirm it.
+          </p>
+
+          <div className="co-receipt">
+            <div className="co-receipt-items">
+              {done.items.map((l) => (
+                <div key={l.id} className="co-receipt-row">
+                  <span>{l.name} <span className="text-muted">× {l.qty}</span></span>
+                  <span>{money(s, l.price * l.qty)}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div className="co-receipt-divider"></div>
+            
+            {done.discount > 0 && (
+              <div className="co-receipt-row text-success">
+                <span>Discount ({done.discountCode})</span>
+                <span>-{money(s, done.discount)}</span>
+              </div>
+            )}
+            <div className="co-receipt-row">
+              <span>Shipping</span>
+              <span>{done.shipping ? money(s, done.shipping) : "FREE"}</span>
+            </div>
+            
+            <div className="co-receipt-divider"></div>
+            
+            <div className="co-receipt-row co-receipt-total">
+              <span>Total</span>
+              <span>{money(s, done.total)}</span>
+            </div>
+            
+            <div className="co-receipt-payment">
+              Payment Method: <b>{done.payment}</b>
+            </div>
+          </div>
+
+          <div className="co-success-actions">
+            <a className="co-btn-wa" href={`https://wa.me/${wa}?text=${encodeURIComponent(waText(done))}`} target="_blank" rel="noreferrer">
+              Send order details on WhatsApp
+            </a>
+            <a className="co-btn-continue" href="#/">
+              Continue Shopping
+            </a>
+          </div>
         </div>
       </Container>
     );
@@ -291,7 +305,27 @@ export default function Checkout({ products, s }) {
                       <span className="co-pay-icon">{m.icon}</span>
                       <span className="co-pay-label">{m.label}</span>
                     </div>
-                    {pay === m.id && <div className="co-pay-note">{m.note}</div>}
+                    
+                    {pay === m.id && m.isManual && (
+                      <div className="co-bank-details">
+                        <p className="co-bank-intro">Please transfer the total amount to one of the following accounts, then send the screenshot to our WhatsApp.</p>
+                        
+                        <div className="co-bank-list">
+                          {bankAccounts.map((acc, i) => (
+                            <div key={i} className="co-bank-item">
+                              <div className="co-bank-name">{acc.bankName}</div>
+                              <div className="co-bank-row"><span>Title:</span> {acc.accountTitle}</div>
+                              <div className="co-bank-row"><span>Account #:</span> <strong>{acc.accountNumber}</strong></div>
+                            </div>
+                          ))}
+                          {!bankAccounts.length && <div className="text-muted small">Loading accounts...</div>}
+                        </div>
+                      </div>
+                    )}
+
+                    {pay === m.id && !m.isManual && (
+                      <div className="co-pay-note">{m.note}</div>
+                    )}
                   </div>
                 ))}
               </div>

@@ -151,3 +151,9 @@ export const subDiscounts = (cb) => {
     )
   );
 };
+export const getPaymentSettings = async () => {
+  if (DEMO) return null;
+  const [f, , k] = await fbp;
+  const snap = await f.getDoc(f.doc(k.db, "settings", "payments"));
+  return snap.exists() ? snap.data() : null;
+};
