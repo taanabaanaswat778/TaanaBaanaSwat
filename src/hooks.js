@@ -9,8 +9,11 @@ export function useProducts() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let loaded = false;
+
     const unsubscribe = subProducts(
       (data) => {
+        loaded = true;
         setList(data);
         setLoading(false);
         setError(null);
@@ -22,7 +25,22 @@ export function useProducts() {
       }
     );
 
-    return () => unsubscribe();
+    // 15-second timeout fallback if network hangs
+    const timer = setTimeout(() => {
+      if (!loaded) {
+        console.warn("Firebase connection timed out.");
+        setLoading(false);
+        setError({
+          code: "timeout",
+          message: "Your internet connection is too slow to reach Google's servers. Please try switching to mobile data."
+        });
+      }
+    }, 15000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   return { products: list, loading, error };

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useProducts, useSettings } from "./hooks";
 import Store from "./pages/Store";
 import CollectionPage from "./pages/CollectionPage";
-import Admin from "./pages/Admin";
+// Removed Admin import
 import Track from "./pages/Track";
 import Policy from "./pages/Policy";
 import Product from "./pages/Product";
@@ -27,8 +27,8 @@ export default function App() {
   const safeProducts = Array.isArray(products) ? products : [];
 
   let page;
-  if (hash === "#/admin") page = <Admin products={safeProducts} s={s} />;
-  else if (hash === "#/track") page = <Track s={s} />;
+  // Removed the #/admin route
+  if (hash === "#/track") page = <Track s={s} />;
   else if (hash === "#/checkout") page = <Checkout products={safeProducts} s={s} />;
   else if (hash === "#/wishlist") page = <Wishlist products={safeProducts} s={s} />;
   else if (hash.startsWith("#/policy/")) page = <Policy s={s} slug={hash.split("/")[2]} />;

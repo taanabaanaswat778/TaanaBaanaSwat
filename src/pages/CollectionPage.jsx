@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Container } from "react-bootstrap";
 import Header from "../components/Header";
 import { SideMenu } from "../components/Menu";
 import Collection from "../components/Collection";
@@ -36,9 +35,9 @@ export default function CollectionPage({ products, s, name, loading, error }) {
 
   const wa = s.wa ? `https://wa.me/${s.wa.replace(/\D/g, "")}` : "";
   const links = (
-    <div className="mt-4 border-top pt-2">
-      <a className="menu-link" href="#/track">Track Your Order</a>
-      {wa && <a className="menu-link" href={wa} target="_blank" rel="noreferrer">Contact on WhatsApp</a>}
+    <div className="mt-4 border-t border-gray-200 pt-2">
+      <a className="block py-2 text-sm text-gray-700 hover:text-brand" href="#/track">Track Your Order</a>
+      {wa && <a className="block py-2 text-sm text-gray-700 hover:text-brand" href={wa} target="_blank" rel="noreferrer">Contact on WhatsApp</a>}
     </div>
   );
 
@@ -47,24 +46,40 @@ export default function CollectionPage({ products, s, name, loading, error }) {
       <Header s={s} count={cart.count} onMenu={() => setMenu(true)} onCart={() => cart.setOpen(true)} search={search} setSearch={setSearch} links={menuItems} active={name} />
       <SideMenu show={menu} onHide={() => setMenu(false)} title={s.name} items={menuItems} active={name}>{links}</SideMenu>
 
-      <section className="cp-banner" style={{ background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})` }}>
-        <Container>
-          <Breadcrumb items={[{ label: "Home", href: "#/" }, { label: title }]} />
-          <h1>{title}</h1>
-          <p>{text}</p>
-          <span className="cp-count">{count} {count === 1 ? "product" : "products"}</span>
-        </Container>
+      {/* Banner */}
+      <section 
+        className="text-white py-8 md:py-10"
+        style={{ background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})` }}
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="mb-4">
+            <Breadcrumb items={[{ label: "Home", href: "#/" }, { label: title }]} />
+          </div>
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-2">{title}</h1>
+          <p className="text-white/90 text-sm max-w-lg mb-4">{text}</p>
+          <span className="inline-block bg-white/20 border border-white/40 px-4 py-1 rounded-full text-xs font-semibold">
+            {count} {count === 1 ? "product" : "products"}
+          </span>
+        </div>
       </section>
 
-      <Container>
-        <div className="cp-chips">
+      {/* Quick Filter Chips */}
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex gap-2 overflow-x-auto py-4 no-scrollbar">
           {MENU.map((m) => (
-            <a key={m.key} href={"#/c/" + encodeURIComponent(m.key)} className={"cp-chip" + (m.key === name ? " on" : "")}>{m.label}</a>
+            <a 
+              key={m.key} 
+              href={"#/c/" + encodeURIComponent(m.key)} 
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${m.key === name ? "bg-black text-white" : "bg-white border border-gray-300 text-gray-700 hover:border-black"}`}
+            >
+              {m.label}
+            </a>
           ))}
         </div>
-      </Container>
+      </div>
 
-      <Container className="pb-3" id="shop">
+      {/* Collection Grid */}
+      <div className="max-w-7xl mx-auto px-4 pb-12" id="shop">
         <Collection 
           products={products} 
           s={s} 
@@ -75,7 +90,7 @@ export default function CollectionPage({ products, s, name, loading, error }) {
           loading={loading}
           error={error}
         />
-      </Container>
+      </div>
 
       <Footer s={s} />
       <Cart show={cart.open} onHide={() => cart.setOpen(false)} items={cart.items} products={products} s={s} qty={cart.qty} remove={cart.remove} add={cart.add} />

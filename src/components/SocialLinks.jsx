@@ -1,14 +1,14 @@
 import { FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 
 const base = {
-  width: 48,
-  height: 48,
+  width: 40,
+  height: 40,
   borderRadius: "50%",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   textDecoration: "none",
-  boxShadow: "0 4px 12px rgba(0,0,0,.25)",
+  boxShadow: "0 4px 12px rgba(0,0,0,.15)",
   transition: "transform .2s, box-shadow .2s",
 };
 
@@ -20,7 +20,7 @@ const ITEMS = [
 
 export default function SocialLinks({ links }) {
   return (
-    <div style={{ display: "flex", gap: 14 }}>
+    <div style={{ display: "flex", gap: 12 }}>
       {ITEMS.map(({ key, label, Icon, bg, glow }) => (
         <a
           key={key}
@@ -30,11 +30,11 @@ export default function SocialLinks({ links }) {
           aria-label={label}
           title={label}
           style={{ ...base, background: bg }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px) scale(1.08)"; e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,.3)"; }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px) scale(1.08)"; e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,.25)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = base.boxShadow; }}
         >
           <Icon
-            size={24}
+            size={20}
             color="#ffffff"
             style={glow ? { filter: "drop-shadow(-1px -1px 0 #25f4ee) drop-shadow(1px 1px 0 #fe2c55)" } : undefined}
           />

@@ -1,10 +1,8 @@
-import { Container } from "react-bootstrap";
 import Footer from "../components/Footer";
 import { BackHome } from "../components/Breadcrumb";
-import logo from "../assets/logo.png";
+import BrandLogo from "../components/BrandLogo";
 import { PiCheckCircle, PiInfo } from "react-icons/pi";
 
-// ===== ALL POLICIES DATA =====
 const PAGES = {
   shipping: {
     title: "Shipping Policy",
@@ -171,44 +169,44 @@ const PAGES = {
     ],
   }
 };
-// =================================
 
 export default function Policy({ s, slug }) {
-  const page = PAGES[slug] || PAGES.shipping; // Fallback to shipping if slug is wrong
+  const page = PAGES[slug] || PAGES.shipping;
 
   return (
     <>
-      <header className="track-top">
+      <header className="grid grid-cols-[1fr_auto_1fr] items-center p-4 border-b border-gray-200 bg-white">
         <BackHome />
-        <a href="#/"><img src={logo} alt={s.name} className="track-logo" /></a>
+        <a href="#/" className="flex justify-center"><BrandLogo color="#111" subColor="#8a2c2c" size="1.8rem" /></a>
         <span />
       </header>
 
-      <Container className="policy-modern py-5">
-        {/* Quick Navigation Links */}
-        <div className="d-flex justify-content-center flex-wrap gap-2 mb-4">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        
+        {/* Quick Navigation */}
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
           {Object.entries(PAGES).map(([key, p]) => (
             <a 
               key={key} 
               href={`#/policy/${key}`}
-              className={`btn btn-sm rounded-pill px-3 ${slug === key ? "btn-dark" : "btn-outline-dark"}`}
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${slug === key ? "bg-black text-white" : "bg-white border border-gray-300 text-gray-600 hover:border-black hover:text-black"}`}
             >
               {p.title}
             </a>
           ))}
         </div>
 
-        <div className="policy-content">
-          <h1 className="policy-title-modern">{page.title}</h1>
-          {page.intro && <p className="policy-intro">{page.intro}</p>}
+        <div className="bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-center mb-4">{page.title}</h1>
+          {page.intro && <p className="text-gray-500 text-sm text-center max-w-xl mx-auto mb-10 leading-relaxed">{page.intro}</p>}
 
           {page.sections.map((sec, i) => (
-            <div key={i} className="policy-section">
-              {sec.heading && <h3 className="policy-heading">{sec.heading}</h3>}
-              <ul className="policy-list-modern">
+            <div key={i} className="mb-8">
+              {sec.heading && <h3 className="text-lg font-bold border-b-2 border-gray-100 pb-2 mb-4 inline-block">{sec.heading}</h3>}
+              <ul className="flex flex-col gap-3">
                 {sec.items.map((t, j) => (
-                  <li key={j}>
-                    <PiCheckCircle className="policy-check" />
+                  <li key={j} className="flex items-start gap-3 text-sm text-gray-600 leading-relaxed">
+                    <PiCheckCircle className="text-brand text-lg flex-shrink-0 mt-0.5" />
                     <span>{t}</span>
                   </li>
                 ))}
@@ -217,15 +215,13 @@ export default function Policy({ s, slug }) {
           ))}
 
           {page.note && (
-            <div className="policy-note">
-              <PiInfo size={24} />
-              <div>
-                <b>Note:</b> {page.note}
-              </div>
+            <div className="flex items-start gap-3 bg-[#faf7f2] border-l-4 border-brand p-5 rounded-r-xl mt-8 text-sm text-gray-700 leading-relaxed">
+              <PiInfo className="text-brand text-xl flex-shrink-0 mt-0.5" />
+              <div><b>Note:</b> {page.note}</div>
             </div>
           )}
         </div>
-      </Container>
+      </div>
 
       <Footer s={s} />
     </>

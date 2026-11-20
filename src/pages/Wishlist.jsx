@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Container, Button } from "react-bootstrap";
 import Header from "../components/Header";
 import { SideMenu } from "../components/Menu";
 import { Breadcrumb } from "../components/Breadcrumb";
@@ -17,12 +16,11 @@ export default function Wishlist({ products, s }) {
   const cart = useCart(products);
   const ids = useWishlist();
   const [menu, setMenu] = useState(false);
-  const [want, setWant] = useState({}); // quantity the customer needs, per product
+  const [want, setWant] = useState({}); 
 
   const go = (f) => { window.location.hash = "#/c/" + encodeURIComponent(f); };
   const menuItems = buildMenu(products, go);
   
-  // Get products that are actually in the wishlist
   const items = ids.map((id) => products.find((p) => p.id === id)).filter(Boolean);
   const qtyOf = (id) => Math.max(1, Math.floor(Number(want[id] ?? 1)) || 1);
 
@@ -43,8 +41,8 @@ export default function Wishlist({ products, s }) {
     "\nPlease send me details.";
 
   const links = (
-    <div className="mt-4 border-top pt-2">
-      <a className="menu-link" href="#/track">Track Your Order</a>
+    <div className="mt-4 border-t border-gray-200 pt-2">
+      <a className="block py-2 text-sm text-gray-700 hover:text-brand" href="#/track">Track Your Order</a>
     </div>
   );
 
@@ -53,33 +51,39 @@ export default function Wishlist({ products, s }) {
       <Header s={s} count={cart.count} onMenu={() => setMenu(true)} onCart={() => cart.setOpen(true)} search="" setSearch={() => {}} links={menuItems} active="" hideSearch />
       <SideMenu show={menu} onHide={() => setMenu(false)} title={s.name} items={menuItems} active="">{links}</SideMenu>
 
-      <Container className="py-4 py-md-5" style={{ maxWidth: 900, minHeight: "60vh" }}>
+      <div className="max-w-4xl mx-auto px-4 py-8 min-h-[60vh]">
         <Breadcrumb items={[{ label: "Home", href: "#/" }, { label: "My Wishlist" }]} />
         
-        <div className="wl-header text-center my-4">
-          <div className="wl-header-icon"><PiHeart /></div>
-          <h1 className="section-title" style={{ margin: "10px 0 8px" }}>My Wishlist ({items.length})</h1>
-          <p className="text-muted mx-auto" style={{ maxWidth: 500 }}>
-            Save the designs you love. If a design is out of stock, or you need a larger quantity, send us a WhatsApp message and we will share the details.
+        <div className="text-center my-8">
+          <div className="w-16 h-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-3xl mx-auto mb-4">
+            <PiHeart />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-black mb-2">My Wishlist ({items.length})</h1>
+          <p className="text-gray-500 text-sm max-w-md mx-auto">
+            Save the designs you love. If a design is out of stock, or you need a larger quantity, send us a WhatsApp message.
           </p>
         </div>
 
         {!items.length ? (
-          <div className="text-center py-5 wl-empty">
-            <div className="wl-empty-icon"><PiHeart /></div>
-            <h4 className="mt-3">Your wishlist is empty</h4>
-            <p className="text-muted mb-4">Tap the heart on any design to save it here for later.</p>
-            <a href="#/c/All" className="btn btn-dark pill px-4 py-2">Browse Collection <PiArrowRight /></a>
+          <div className="text-center py-16">
+            <div className="w-20 h-20 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-4xl mx-auto mb-4">
+              <PiHeart />
+            </div>
+            <h4 className="text-lg font-bold mb-2">Your wishlist is empty</h4>
+            <p className="text-gray-500 text-sm mb-6">Tap the heart on any design to save it here for later.</p>
+            <a href="#/c/All" className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-gray-800 transition-colors">
+              Browse Collection <PiArrowRight />
+            </a>
           </div>
         ) : (
           <>
-            <div className="text-center mb-5">
-              <a className="btn-wa-large" href={waUrl(s, allMsg)} target="_blank" rel="noreferrer">
+            <div className="text-center mb-10">
+              <a className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-full font-bold text-sm shadow-md hover:bg-[#1da851] transition-colors" href={waUrl(s, allMsg)} target="_blank" rel="noreferrer">
                 <PiWhatsappLogo size={20} /> Send my whole wishlist on WhatsApp
               </a>
             </div>
 
-            <div className="wl-grid">
+            <div className="flex flex-col gap-4">
               {items.map((p) => {
                 const left = stockLeft(p);
                 const n = qtyOf(p.id);
@@ -87,60 +91,62 @@ export default function Wishlist({ products, s }) {
                 const over = !out && left !== null && n > left;
                 
                 return (
-                  <div key={p.id} className="wl-card">
-                    <a href={`#/product/${p.id}`} className="wl-card-img">
-                      {p.img ? <img src={p.img} alt={p.name} /> : <div className="wl-ph">👗</div>}
-                      {out && <span className="wl-badge out">Out of Stock</span>}
-                      {!out && left !== null && left <= 3 && <span className="wl-badge low">Only {left} left</span>}
+                  <div key={p.id} className="flex flex-col md:flex-row gap-4 bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-shadow">
+                    
+                    <a href={`#/product/${p.id}`} className="relative w-full md:w-32 h-48 md:h-40 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50">
+                      {p.img ? <img src={p.img} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-4xl">👗</div>}
+                      {out && <span className="absolute top-2 left-2 bg-black text-white text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wider">Out of Stock</span>}
+                      {!out && left !== null && left <= 3 && <span className="absolute top-2 left-2 bg-yellow-100 text-yellow-800 text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wider">Only {left} left</span>}
                     </a>
                     
-                    <div className="wl-card-body">
-                      <a className="wl-name" href={`#/product/${p.id}`}>{nameOf(p)}</a>
+                    <div className="flex-1 flex flex-col justify-center">
+                      <a className="text-base font-bold text-black hover:text-brand mb-1" href={`#/product/${p.id}`}>{nameOf(p)}</a>
                       
-                      <div className="wl-price-row">
-                        <b>{money(s, eff(p))}</b>
-                        {eff(p) < p.price && <s className="text-muted ms-2">{money(s, p.price)}</s>}
+                      <div className="flex items-center gap-2 mb-2">
+                        <b className="text-red-600 text-lg">{money(s, eff(p))}</b>
+                        {eff(p) < p.price && <s className="text-gray-400 text-sm">{money(s, p.price)}</s>}
                       </div>
 
-                      <div className="wl-status-row">
+                      <div className="mb-3 text-sm font-semibold">
                         {out ? (
-                          <span className="text-danger fw-semibold small">Currently unavailable</span>
+                          <span className="text-red-600">Currently unavailable</span>
                         ) : (
-                          <span className="text-success fw-semibold small">{remainText(p) || "In Stock"}</span>
+                          <span className="text-green-700">{remainText(p) || "In Stock"}</span>
                         )}
                       </div>
 
-                      <div className="wl-qty-row">
-                        <label>Qty needed:</label>
+                      <div className="flex items-center gap-3 mb-3">
+                        <label className="text-xs text-gray-500 font-medium">Qty needed:</label>
                         <input 
                           type="number" 
                           min="1" 
                           value={want[p.id] ?? 1} 
                           onChange={(e) => setWant({ ...want, [p.id]: e.target.value })} 
+                          className="w-16 border border-gray-300 rounded-md px-2 py-1 text-sm font-semibold focus:outline-none focus:border-black"
                         />
                       </div>
 
                       {(out || over) && (
-                        <div className="wl-alert">
+                        <div className="bg-yellow-50 text-yellow-800 text-xs font-medium p-2 rounded-md mb-3">
                           {out 
                             ? "This design is out of stock. Send us a WhatsApp for details." 
                             : `You need more than the ${left} we have. Send us a WhatsApp and we'll arrange it.`}
                         </div>
                       )}
 
-                      <div className="wl-actions">
-                        <a className="btn-wa-small" href={waUrl(s, msgFor(p))} target="_blank" rel="noreferrer">
+                      <div className="flex flex-wrap gap-2 mt-auto">
+                        <a className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-md font-semibold text-xs hover:bg-[#1da851] transition-colors" href={waUrl(s, msgFor(p))} target="_blank" rel="noreferrer">
                           <PiWhatsappLogo size={16} /> WhatsApp
                         </a>
                         
                         {!out && !over && (
-                          <Button size="sm" variant="dark" className="btn-add-wl" onClick={() => cart.add(p.id, n)}>
+                          <button className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md font-semibold text-xs hover:bg-gray-800 transition-colors" onClick={() => cart.add(p.id, n)}>
                             <PiShoppingCart size={16} /> Add to Cart
-                          </Button>
+                          </button>
                         )}
                         
-                        <button className="btn-remove-wl" onClick={() => toggleWishlist(p.id)} title="Remove from wishlist">
-                          <PiTrash size={16} />
+                        <button className="inline-flex items-center justify-center w-8 h-8 md:w-auto md:h-auto md:px-3 md:py-2 rounded-md border border-gray-200 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors ml-auto" onClick={() => toggleWishlist(p.id)} title="Remove">
+                          <PiTrash size={16} /> <span className="hidden md:inline ml-2 text-xs font-semibold">Remove</span>
                         </button>
                       </div>
                     </div>
@@ -150,7 +156,7 @@ export default function Wishlist({ products, s }) {
             </div>
           </>
         )}
-      </Container>
+      </div>
 
       <Footer s={s} />
       <Cart show={cart.open} onHide={() => cart.setOpen(false)} items={cart.items} products={products} s={s} qty={cart.qty} remove={cart.remove} add={cart.add} />

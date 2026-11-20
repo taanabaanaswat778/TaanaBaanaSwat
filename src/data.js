@@ -31,44 +31,52 @@ const explain = (e, what) =>
 export const subProducts = (cb, onError) => {
   if (DEMO) return lsub("products", cb);
 
-  let retryTimer = null;
-  let hasReceivedData = false;
+  const projectId = String(import.meta.env.VITE_FIREBASE_PROJECT_ID || "").trim();
+  const apiKey = String(import.meta.env.VITE_FIREBASE_API_KEY || "").trim();
 
-  const startListener = () => {
-    return sub((f, a, k) => {
-      const unsub = f.onSnapshot(
-        f.collection(k.db, "products"), 
-        (s) => {
-          hasReceivedData = true;
-          clearTimeout(retryTimer);
-          
-          const items = rows(s);
-          // Sort by newest first, but don't let missing timestamps hide the products
-          items.sort((x, y) => (y.createdAt?.seconds || 0) - (x.createdAt?.seconds || 0));
-          
-          if (items.length) reportStatus("", "");
-          else reportStatus("info", "Connected to Firebase, but there are no products yet. Upload one in your admin website.");
-          
-          cb(items);
-        },
-        (e) => {
-          console.error("FIRESTORE LISTENER ERROR:", e);
-          reportStatus("err", explain(e, "products"));
-          if (onError) onError(e);
-          
-          if (e.code === 'unavailable' || e.message?.includes('404')) {
-            clearTimeout(retryTimer);
-            retryTimer = setTimeout(() => {
-              if (!hasReceivedData) startListener();
-            }, 3000);
+  // Force download of all 1000 products
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/products?key=${apiKey}&pageSize=1000`;
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+      const json = await res.json();
+      
+      const items = (json.documents || []).map((doc) => {
+        const id = doc.name.split("/").pop();
+        const data = {};
+        for (const [key, val] of Object.entries(doc.fields || {})) {
+          if (val.stringValue !== undefined) data[key] = val.stringValue;
+          else if (val.integerValue !== undefined) data[key] = Number(val.integerValue);
+          else if (val.doubleValue !== undefined) data[key] = Number(val.doubleValue);
+          else if (val.booleanValue !== undefined) data[key] = val.booleanValue;
+          else if (val.arrayValue !== undefined) {
+            data[key] = (val.arrayValue.values || []).map(v => v.stringValue || v.integerValue);
+          } else if (val.timestampValue !== undefined) {
+            data[key] = { seconds: new Date(val.timestampValue).getTime() / 1000 };
           }
         }
-      );
-      return unsub;
-    });
+        return { id, ...data };
+      });
+
+      items.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+      if (items.length) reportStatus("", "");
+      else reportStatus("info", "Connected to Firebase, but there are no products yet.");
+      
+      cb(items);
+    } catch (err) {
+      console.error("REST FETCH ERROR:", err);
+      reportStatus("err", "Failed to connect to database. Check internet.");
+      if (onError) onError({ message: "Could not reach Google servers. Please check your internet connection." });
+    }
   };
 
-  return startListener();
+  fetchData();
+  const interval = setInterval(fetchData, 10000); // Refresh every 10 seconds
+
+  return () => clearInterval(interval);
 };
 
 export const subSettings = (cb) =>
@@ -90,6 +98,23 @@ export const subOrders = (cb, onError) =>
           }
         )
       );
+
+export const subDiscounts = (cb) => {
+  if (DEMO) return lsub("discounts", cb);
+  return sub((f, a, k) => 
+    f.onSnapshot(f.collection(k.db, "discounts"), 
+      (s) => cb(rows(s)), 
+      (e) => console.error("Could not load discounts", e)
+    )
+  );
+};
+
+export const getPaymentSettings = async () => {
+  if (DEMO) return null;
+  const [f, , k] = await fbp;
+  const snap = await f.getDoc(f.doc(k.db, "settings", "payments"));
+  return snap.exists() ? snap.data() : null;
+};
 
 export const onAuth = (cb) => (DEMO ? lsub("user", cb) : sub((f, a, k) => a.onAuthStateChanged(k.auth, cb)));
 
@@ -140,20 +165,5 @@ export async function logout() {
   const [, a, k] = await fbp; return a.signOut(k.auth);
 }
 
-export const isAdmin = (u) => (DEMO ? !u ? false : (!ADMIN_UID || u.uid === ADMIN_UID) : false);
+export const isAdmin = (u) => (DEMO ? !!u : !!u && (!ADMIN_UID || u.uid === ADMIN_UID));
 export const fmtDate = (v) => (v ? (v.toDate ? v.toDate() : new Date(v)).toLocaleString() : "");
-export const subDiscounts = (cb) => {
-  if (DEMO) return lsub("discounts", cb);
-  return sub((f, a, k) => 
-    f.onSnapshot(f.collection(k.db, "discounts"), 
-      (s) => cb(rows(s)), 
-      (e) => console.error("Could not load discounts", e)
-    )
-  );
-};
-export const getPaymentSettings = async () => {
-  if (DEMO) return null;
-  const [f, , k] = await fbp;
-  const snap = await f.getDoc(f.doc(k.db, "settings", "payments"));
-  return snap.exists() ? snap.data() : null;
-};

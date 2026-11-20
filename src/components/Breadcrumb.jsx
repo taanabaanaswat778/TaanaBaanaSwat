@@ -9,17 +9,19 @@ const arrow = (
   </svg>
 );
 
-// Home / Category / Product
 export function Breadcrumb({ items }) {
   return (
-    <nav className="crumbs" aria-label="Breadcrumb">
+    <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-500" aria-label="Breadcrumb">
       {items.map((it, i) => (
-        <span key={i} className="crumb">
-          {i > 0 && <span className="crumb-sep">/</span>}
+        <span key={i} className="flex items-center">
+          {i > 0 && <span className="mx-2 text-gray-300">/</span>}
           {it.href ? (
-            <a href={it.href}>{i === 0 && home}{it.label}</a>
+            <a href={it.href} className="flex items-center gap-1.5 hover:text-brand transition-colors">
+              {i === 0 && home}
+              {it.label}
+            </a>
           ) : (
-            <span className="crumb-now" title={it.label}>{it.label}</span>
+            <span className="text-black font-semibold truncate max-w-[200px]" title={it.label}>{it.label}</span>
           )}
         </span>
       ))}
@@ -27,10 +29,9 @@ export function Breadcrumb({ items }) {
   );
 }
 
-// Rounded "Back to Home" button
 export function BackHome({ label = "Back to Home" }) {
   return (
-    <a href="#/" className="back-home" aria-label={label}>
+    <a href="#/" className="inline-flex items-center gap-2 border border-gray-300 rounded-full bg-white px-4 py-2 text-xs font-semibold tracking-wider uppercase text-black hover:bg-black hover:text-white hover:border-black transition-colors">
       {arrow}<span>{label}</span>
     </a>
   );

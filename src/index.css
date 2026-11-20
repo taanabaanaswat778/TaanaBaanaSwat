@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #8a2c2c;
+  --color-brand-dark: #6e2020;
+  --color-brand-light: #faf5f0;
+  --color-ink: #111111;
+  --color-mut: #777777;
+  --color-bd: #eeeeee;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-ink font-sans antialiased;
+  }
+}
+
+/* =========================================
+   1. HEADER
+   ========================================= */
+.hdr { @apply sticky -top-8 z-50 bg-white/95 backdrop-blur-md border-b border-bd; }
+.hdr-main { @apply max-w-7xl mx-auto px-4 py-2.5 grid grid-cols-[1fr_auto_1fr] items-center; }
+.hdr-links { @apply hidden lg:flex justify-center flex-wrap gap-x-6 gap-y-1.5 px-5 pb-2.5; }
+
+/* =========================================
+   2. HERO SLIDESHOW
+   ========================================= */
+.hs { @apply relative overflow-hidden bg-[#f5f2ec]; }
+.hs-track { @apply flex transition-transform duration-700 ease-[cubic-bezier(.65,0,.35,1)]; }
+.hs-slide { @apply flex-none w-full min-h-[350px] md:min-h-[500px] flex items-center text-white bg-cover bg-center no-underline; }
+.hs-inner { @apply flex flex-col md:flex-row items-center justify-between gap-5 py-10 px-4 w-full text-center md:text-left max-w-7xl mx-auto; }
+
+/* =========================================
+   3. TRUST STRIP
+   ========================================= */
+.trust-strip { @apply bg-[#f5f2ec] py-3 border-y border-bd; }
+.trust-item { @apply flex items-center justify-center gap-2 text-[12px] font-semibold; }
+
+/* =========================================
+   4. PROMO CARDS
+   ========================================= */
+.promo-card { @apply aspect-[3/4] rounded-xl relative overflow-hidden bg-[#e9d5c0] cursor-pointer flex items-end; }
+.promo-overlay { @apply absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent z-10; }
+.promo-content { @apply relative z-20 p-4 text-white w-full; }
+
+/* =========================================
+   5. PRODUCT GRID & CARD
+   ========================================= */
+.product-card { @apply flex flex-col h-full bg-white; }
+.product-img-wrap { @apply relative w-full overflow-hidden bg-[#f8f8f8] mb-2 aspect-[3/4]; }
+.product-img { @apply w-full h-full object-cover transition-transform duration-500; }
+.product-card:hover .product-img { @apply scale-105; }
+.product-title { @apply text-[12px] font-semibold text-gray-900 leading-snug line-clamp-2 min-h-[32px] mb-1; }
+.product-price { @apply text-[13px] font-bold text-[#e30613]; }
+.product-old-price { @apply text-[11px] text-gray-400 line-through; }
+.product-stock { @apply text-[10px] font-semibold text-[#2f7d4f] mb-2 h-3; }
+.product-stock.low { @apply text-[#d9480f]; }
+
+/* =========================================
+   6. BUTTONS
+   ========================================= */
+.btn-add-cart { @apply w-full bg-[#111] text-white py-1.5 text-[10px] font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors; }
+.btn-buy-now { @apply w-full bg-white border border-gray-300 text-black py-1.5 text-[10px] font-bold uppercase tracking-wider hover:border-black hover:bg-gray-50 transition-colors; }
+
+/* =========================================
+   7. FOOTER
+   ========================================= */
+.footer-luxe { @apply bg-[#111] text-white mt-12; }
+.footer-features { @apply bg-[#1a1a1a] py-4 border-b border-white/5; }
+.footer-title { @apply text-[12px] font-bold uppercase tracking-widest text-white mb-4; }
+.footer-links a { @apply text-gray-400 text-[13px] hover:text-[#d4af37] transition-colors; }
+.footer-contact li { @apply flex items-start gap-3 text-gray-400 text-[13px] mb-3; }
+.footer-bottom { @apply bg-[#0a0a0a] py-4 border-t border-white/5 text-gray-500 text-[11px]; }
+
+/* =========================================
+   8. ANIMATIONS
+   ========================================= */
+@keyframes slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.animate-slide-in { animation: slide-in 0.3s ease-out forwards; }
+@keyframes slide-right {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-right {
+  animation: slide-right 0.3s ease-out forwards;
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-down {
+  animation: slide-down 0.2s ease-out forwards;
+}
+@keyframes slide-right {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-right {
+  animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
