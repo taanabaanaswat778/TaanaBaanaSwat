@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { eff, money, shortDate, inCollection, collectionName, inStock, stockLeft, remainText } from "../utils";
+import { eff, money, inCollection, collectionName, inStock, stockLeft, remainText } from "../utils";
 import { toggleWishlist, useWishlist } from "../wishlist";
 import { PiCaretDown, PiArrowsDownUp, PiHeart, PiHeartFill } from "react-icons/pi";
 
@@ -11,19 +11,36 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
   const remain = remainText(p);
 
   return (
-    <div className="product-card group text-center">
-      <div className="product-img-wrap">
+    <div className="flex flex-col group w-full h-full bg-white">
+      
+      {/* Image Wrapper - Strict 3:4 Aspect Ratio */}
+      <div className="relative w-full aspect-[3/4] overflow-hidden rounded-md bg-gray-50 mb-2">
         <a href={href} className="block w-full h-full">
           {p.img ? (
-            <img src={p.img} alt={p.name} className="product-img" />
+            <img 
+              src={p.img} 
+              alt={p.name} 
+              loading="lazy" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl bg-[#e9d5c0]">👗</div>
+            <div className="w-full h-full flex items-center justify-center text-4xl bg-[#e9d5c0]">👗</div>
           )}
         </a>
         
-        {onSale && <span className="absolute top-1.5 left-1.5 bg-[#e30613] text-white text-[9px] font-bold px-2 py-1 uppercase tracking-wider z-10">SALE -{Math.round(100 - (eff(p) / p.price) * 100)}%</span>}
-        {!onSale && p.isNew && <span className="absolute top-1.5 left-1.5 bg-black text-white text-[9px] font-bold px-2 py-1 uppercase tracking-wider z-10">NEW</span>}
+        {/* Badges */}
+        {onSale && (
+          <span className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider z-10">
+            SALE -{Math.round(100 - (eff(p) / p.price) * 100)}%
+          </span>
+        )}
+        {!onSale && p.isNew && (
+          <span className="absolute top-1.5 left-1.5 bg-black text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider z-10">
+            NEW
+          </span>
+        )}
         
+        {/* Wishlist Heart */}
         <button
           onClick={() => toggleWishlist(p.id)}
           className={`absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-white/90 shadow-sm flex items-center justify-center text-[14px] z-10 transition-transform hover:scale-110 ${liked ? "text-red-500" : "text-gray-600"}`}
@@ -32,32 +49,54 @@ export function ProductCard({ p, s, onAdd, onBuy }) {
         </button>
       </div>
 
-      <div className="flex flex-col items-center w-full px-1 flex-1 justify-between">
+      {/* Product Info - Flex-grow ensures buttons align at bottom */}
+      <div className="flex flex-col items-center w-full flex-1 justify-between text-center">
+        
         <div className="w-full">
-          <a href={href} className="product-title">
-            {p.pieces ? `${p.pieces} - ` : ""}{p.name}{p.pieces ? " (Unstitched)" : ""}
+          {/* Title - Fixed min-height so rows align perfectly */}
+          <a href={href} className="block mb-1">
+            <div className="text-[12px] font-semibold text-black leading-tight line-clamp-2 min-h-[30px]">
+              {p.pieces ? `${p.pieces} - ` : ""}{p.name}{p.pieces ? " (Unstitched)" : ""}
+            </div>
           </a>
           
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className={onSale ? "product-price" : "text-[13px] font-bold text-black"}>
+          {/* Price */}
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <span className={onSale ? "text-red-600 font-bold text-[13px]" : "text-[13px] font-bold text-black"}>
               {money(s, eff(p))}
             </span>
-            {onSale && <span className="product-old-price">{money(s, p.price)}</span>}
+            {onSale && <span className="text-gray-400 text-[11px] line-through">{money(s, p.price)}</span>}
           </div>
 
-          <div className={`product-stock ${left !== null && left <= 3 ? "low" : ""}`}>
-            {remain || <span className="opacity-0">In stock</span>}
+          {/* Stock Status - Only shows if low or out */}
+          <div className="h-4 mb-2 flex items-center justify-center">
+            <span className={`text-[10px] font-medium ${remain ? (left <= 3 ? "text-orange-600" : "text-green-700") : "text-transparent"}`}>
+              {remain || "In stock"}
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-1.5 w-full mt-1">
+        {/* Action Buttons - Side by side */}
+        <div className="flex items-center justify-center gap-1.5 w-full mt-auto">
           {inStock(p) ? (
             <>
-              <button onClick={() => onAdd(p.id)} className="btn-add-cart flex-1">Add to cart</button>
-              <button onClick={() => onBuy(p.id)} className="btn-buy-now flex-1">Buy now</button>
+              <button 
+                onClick={() => onAdd(p.id)} 
+                className="flex-1 bg-black text-white rounded-full text-[10px] uppercase font-bold tracking-wider py-1.5 hover:bg-gray-800 transition-colors"
+              >
+                Add
+              </button>
+              <button 
+                onClick={() => onBuy(p.id)} 
+                className="flex-1 border border-black text-black bg-white rounded-full text-[10px] uppercase font-bold tracking-wider py-1.5 hover:bg-gray-50 transition-colors"
+              >
+                Buy
+              </button>
             </>
           ) : (
-            <span className="text-gray-500 text-[10px] font-semibold py-1.5 uppercase tracking-wider">Out of stock</span>
+            <span className="w-full text-gray-400 border border-gray-200 bg-gray-50 rounded-full text-[10px] uppercase font-bold tracking-wider py-1.5 text-center">
+              Out of stock
+            </span>
           )}
         </div>
       </div>
@@ -107,9 +146,11 @@ const SortDropdown = ({ sort, setSort }) => {
 export default function Collection({ products = [], s, filter, search = "", onAdd, onBuy, loading, error }) {
   const [sort, setSort] = useState("rel");
   const [cols, setCols] = useState(4);
-  const [visibleCount, setVisibleCount] = useState(16);
+  
+  // Increased from 16 to 24 so more products load at once
+  const [visibleCount, setVisibleCount] = useState(24);
 
-  useEffect(() => { setVisibleCount(16); }, [filter, search, sort]);
+  useEffect(() => { setVisibleCount(24); }, [filter, search, sort]);
 
   const safeProducts = Array.isArray(products) ? products : [];
   const q = search.trim().toLowerCase();
@@ -144,7 +185,7 @@ export default function Collection({ products = [], s, filter, search = "", onAd
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       
-      {/* 3rd Screenshot Fix: Collection Controls */}
+      {/* Collection Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 pb-4 border-b border-gray-200">
         <div className="text-left w-full sm:w-auto">
           <h2 className="font-extrabold text-xl text-black m-0">{q ? `Search: "${search}"` : label}</h2>
@@ -165,7 +206,8 @@ export default function Collection({ products = [], s, filter, search = "", onAd
 
       {shown.length ? (
         <>
-          <div className={`grid grid-cols-2 ${cols === 2 ? "lg:grid-cols-2" : cols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"} gap-3 md:gap-5`}>
+          {/* Grid Layout */}
+          <div className={`grid grid-cols-2 ${cols === 2 ? "lg:grid-cols-2" : cols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"} gap-x-3 gap-y-6 md:gap-x-4 md:gap-y-8`}>
             {visibleProducts.map((p) => (
               <ProductCard key={p.id} p={p} s={s} onAdd={onAdd} onBuy={onBuy} />
             ))}
@@ -173,7 +215,10 @@ export default function Collection({ products = [], s, filter, search = "", onAd
           
           {visibleCount < shown.length && (
             <div className="text-center mt-10 mb-6">
-              <button className="border border-black text-black px-8 py-3 rounded-full font-bold text-sm uppercase hover:bg-black hover:text-white transition-colors" onClick={() => setVisibleCount((prev) => prev + 16)}>
+              <button 
+                className="border border-black text-black px-8 py-3 rounded-full font-bold text-sm uppercase hover:bg-black hover:text-white transition-colors" 
+                onClick={() => setVisibleCount((prev) => prev + 24)} // Loads 24 more at a time
+              >
                 Load More Products
               </button>
             </div>
